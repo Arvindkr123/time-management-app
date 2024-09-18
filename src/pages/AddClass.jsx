@@ -86,10 +86,7 @@ export function SortableTable() {
   const onClassSubmitHandler = (e) => {
     e.preventDefault();
     if (ClassName === "") {
-      toast.error("Please provide the class name", {
-        className: `z-[9999]`,
-      });
-      setOpen(false);
+      alert("Please provide the class name");
       return;
     }
   };
