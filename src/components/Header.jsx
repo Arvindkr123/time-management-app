@@ -18,10 +18,10 @@ function NavList() {
         className="p-1 font-medium"
       >
         <Link
-          to="/"
+          to="/add-class"
           className="flex items-center hover:text-blue-500 transition-colors"
         >
-          Home
+          Add Class
         </Link>
       </Typography>
       <Typography
@@ -31,10 +31,10 @@ function NavList() {
         className="p-1 font-medium"
       >
         <Link
-          to="/about"
+          to="/add-teacher"
           className="flex items-center hover:text-blue-500 transition-colors"
         >
-          About
+          Add Teacher
         </Link>
       </Typography>
       <Typography
@@ -44,10 +44,10 @@ function NavList() {
         className="p-1 font-medium"
       >
         <Link
-          to="/contact"
+          to="/add-subject"
           className="flex items-center hover:text-blue-500 transition-colors"
         >
-          Contact
+          Add Subject
         </Link>
       </Typography>
     </ul>
@@ -69,7 +69,12 @@ export function NavbarSimple() {
   }, []);
 
   return (
-    <Navbar className="sticky top-0 w-full px-6 py-3 bg-indigo-800 z-50">
+    <Navbar
+      fullWidth={true}
+      variant="filled"
+      onAnimationStart={true}
+      className="sticky top-0 w-full px-6 py-3 bg-white z-50"
+    >
       <div className="flex items-center justify-between text-blue-gray-900 w-full">
         <Typography
           as={Link}
