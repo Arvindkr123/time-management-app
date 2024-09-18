@@ -17,6 +17,7 @@ import {
   DialogBody,
 } from "@material-tailwind/react";
 import { useState } from "react";
+import { toast } from "react-toastify";
 const TABLE_HEAD = ["Class Name", "Created At", ""];
 
 const TABLE_ROWS = [
@@ -78,8 +79,20 @@ export default AddClass;
 
 export function SortableTable() {
   const [open, setOpen] = useState(false);
+  const [ClassName, setClassName] = useState("");
 
   const handleOpen = () => setOpen(!open);
+
+  const onClassSubmitHandler = (e) => {
+    e.preventDefault();
+    if (ClassName === "") {
+      toast.error("Please provide the class name", {
+        className: `z-[9999]`,
+      });
+      setOpen(false);
+      return;
+    }
+  };
   return (
     <Card className="h-full w-full">
       <CardHeader floated={false} shadow={false} className="rounded-none">
@@ -115,6 +128,8 @@ export function SortableTable() {
                   Class Name
                 </Typography>
                 <Input
+                  value={ClassName}
+                  onChange={(e) => setClassName(e.target.value)}
                   size="lg"
                   placeholder="classs name"
                   className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
@@ -124,7 +139,12 @@ export function SortableTable() {
                 />
               </div>
 
-              <Button className="mt-6" fullWidth>
+              <Button
+                type="submit"
+                onClick={onClassSubmitHandler}
+                className="mt-6"
+                fullWidth
+              >
                 add class
               </Button>
               <Button

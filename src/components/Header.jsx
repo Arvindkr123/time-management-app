@@ -94,10 +94,10 @@ export function NavbarSimple() {
         <Typography
           as={Link}
           to="/"
-          variant="h6"
+          variant="h4"
           className="mr-4 cursor-pointer py-1.5"
         >
-          TimeTable
+          CDS-TimeTable
         </Typography>
         <div className="hidden lg:block">
           <NavList />
