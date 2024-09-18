@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import React from "react";
 import {
   Navbar,
@@ -9,6 +9,9 @@ import {
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
 function NavList() {
+  const location = useLocation();
+
+  console.log(location.pathname);
   return (
     <ul className="my-2 flex flex-col gap-2 lg:mb-0 lg:mt-0 lg:flex-row lg:items-center lg:gap-6">
       <Typography
@@ -19,7 +22,11 @@ function NavList() {
       >
         <Link
           to="/add-class"
-          className="flex items-center hover:text-blue-500 transition-colors"
+          className={`flex items-center transition-colors ${
+            location.pathname === "/add-class"
+              ? "underline text-red-600 tracking-widest" // Active state: underline and a distinct color
+              : "text-gray-500 hover:text-blue-500" // Inactive state: default color with hover effect
+          }`}
         >
           Add Class
         </Link>
@@ -32,7 +39,11 @@ function NavList() {
       >
         <Link
           to="/add-teacher"
-          className="flex items-center hover:text-blue-500 transition-colors"
+          className={`flex items-center transition-colors ${
+            location.pathname === "/add-teacher"
+              ? "underline text-red-600 tracking-widest" // Active state: underline and a distinct color
+              : "text-gray-500 hover:text-blue-500" // Inactive state: default color with hover effect
+          }`}
         >
           Add Teacher
         </Link>
@@ -45,7 +56,11 @@ function NavList() {
       >
         <Link
           to="/add-subject"
-          className="flex items-center hover:text-blue-500 transition-colors"
+          className={`flex items-center transition-colors ${
+            location.pathname === "/add-subject"
+              ? "underline text-red-600 tracking-widest" // Active state: underline and a distinct color
+              : "text-gray-500 hover:text-blue-500" // Inactive state: default color with hover effect
+          }`}
         >
           Add Subject
         </Link>

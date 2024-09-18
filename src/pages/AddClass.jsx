@@ -12,29 +12,13 @@ import {
   CardBody,
   Chip,
   CardFooter,
-  Tabs,
-  TabsHeader,
-  Tab,
   Avatar,
   IconButton,
   Tooltip,
+  Dialog,
+  DialogBody,
 } from "@material-tailwind/react";
-
-const TABS = [
-  {
-    label: "All",
-    value: "all",
-  },
-  {
-    label: "Monitored",
-    value: "monitored",
-  },
-  {
-    label: "Unmonitored",
-    value: "unmonitored",
-  },
-];
-
+import { useState } from "react";
 const TABLE_HEAD = ["Member", "Function", "Status", "Employed", ""];
 
 const TABLE_ROWS = [
@@ -95,38 +79,72 @@ const AddClass = () => {
 export default AddClass;
 
 export function SortableTable() {
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = () => setOpen(!open);
   return (
-    <Card className="h-full w-full p-3">
+    <Card className="h-full w-full">
       <CardHeader floated={false} shadow={false} className="rounded-none">
         <div className="mb-8 flex items-center justify-between gap-8">
           <div>
             <Typography variant="h5" color="blue-gray">
-              Classes list
+              Classess list
             </Typography>
             <Typography color="gray" className="mt-1 font-normal">
               See information about all classess
             </Typography>
           </div>
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-            <Button variant="outlined" size="sm">
-              view all
-            </Button>
-            <Button className="flex items-center gap-3" size="sm">
-              <UserPlusIcon strokeWidth={2} className="h-4 w-4" /> Add member
+            <Button
+              onClick={handleOpen}
+              className="flex items-center gap-3"
+              size="sm"
+            >
+              <UserPlusIcon strokeWidth={2} className="h-4 w-4" /> Add Class
             </Button>
           </div>
         </div>
+
+        {/* Dialog for Add class start here ------ */}
+        <Dialog open={open} handler={handleOpen}>
+          <Card color="transparent" shadow={false} className="p-5">
+            <Typography variant="h4" color="blue-gray">
+              Add Class
+            </Typography>
+            <form className="mt-8 mb-2">
+              <div className="mb-1 flex flex-col gap-6">
+                <Typography variant="h6" color="blue-gray" className="-mb-3">
+                  Class Name
+                </Typography>
+                <Input
+                  size="lg"
+                  placeholder="classs name"
+                  className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
+                  labelProps={{
+                    className: "before:content-none after:content-none",
+                  }}
+                />
+              </div>
+
+              <Button className="mt-6" fullWidth>
+                add class
+              </Button>
+              <Button
+                onClick={handleOpen}
+                className="mt-3"
+                variant="outlined"
+                fullWidth
+              >
+                Cancel
+              </Button>
+            </form>
+          </Card>
+          <DialogBody></DialogBody>
+        </Dialog>
+        {/* Dialog for Add class end here ------ */}
+
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-          <Tabs value="all" className="w-full md:w-max">
-            <TabsHeader>
-              {TABS.map(({ label, value }) => (
-                <Tab key={value} value={value}>
-                  &nbsp;&nbsp;{label}&nbsp;&nbsp;
-                </Tab>
-              ))}
-            </TabsHeader>
-          </Tabs>
-          <div className="w-full md:w-72">
+          <div className="w-full">
             <Input
               label="Search"
               icon={<MagnifyingGlassIcon className="h-5 w-5" />}
@@ -225,8 +243,8 @@ export function SortableTable() {
                         {date}
                       </Typography>
                     </td>
-                    <td className={classes}>
-                      <Tooltip content="Edit User">
+                    <td onClick={handleOpen} className={classes}>
+                      <Tooltip content="Edit Class">
                         <IconButton variant="text">
                           <PencilIcon className="h-4 w-4" />
                         </IconButton>
