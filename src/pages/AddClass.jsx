@@ -18,55 +18,13 @@ import {
 } from "@material-tailwind/react";
 import { useState } from "react";
 import { toast } from "react-toastify";
-const TABLE_HEAD = ["Class Name", "Created At", ""];
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import {
+  addClassApiPostCall,
+  getAllClassesApiGetCall,
+} from "../helpers/api/time-table.class";
 
-const TABLE_ROWS = [
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-3.jpg",
-    name: "John Michael",
-    email: "john@creative-tim.com",
-    job: "Manager",
-    org: "Organization",
-    online: true,
-    date: "23/04/18",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-2.jpg",
-    name: "Alexa Liras",
-    email: "alexa@creative-tim.com",
-    job: "Programator",
-    org: "Developer",
-    online: false,
-    date: "23/04/18",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-1.jpg",
-    name: "Laurent Perrier",
-    email: "laurent@creative-tim.com",
-    job: "Executive",
-    org: "Projects",
-    online: false,
-    date: "19/09/17",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-4.jpg",
-    name: "Michael Levi",
-    email: "michael@creative-tim.com",
-    job: "Programator",
-    org: "Developer",
-    online: true,
-    date: "24/12/08",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-5.jpg",
-    name: "Richard Gran",
-    email: "richard@creative-tim.com",
-    job: "Manager",
-    org: "Executive",
-    online: false,
-    date: "04/10/21",
-  },
-];
+const TABLE_HEAD = ["Class Name", "Created At", ""];
 
 const AddClass = () => {
   return (
@@ -80,16 +38,66 @@ export default AddClass;
 export function SortableTable() {
   const [open, setOpen] = useState(false);
   const [ClassName, setClassName] = useState("");
+  const [page, setPage] = useState(1); // Add state for current page
+  const [limit] = useState(10); // Optional: Set a default limit per page
+  const [search, setSearch] = useState("");
 
   const handleOpen = () => setOpen(!open);
 
-  const onClassSubmitHandler = (e) => {
+  const queryClient = useQueryClient();
+  const mutation = useMutation(addClassApiPostCall, {
+    onSuccess: (data) => {
+      if (data.data.success) {
+        toast.success("Class Name added successfully!"); // Add toast on success
+      }
+      queryClient.invalidateQueries(["getTimeTableClasses", page, search]);
+    },
+    onError: (error) => {
+      toast.error(error.response.data.message); // Add toast on error
+    },
+  });
+
+  const onClassSubmitHandler = async (e) => {
     e.preventDefault();
     if (ClassName === "") {
-      alert("Please provide the class name");
+      toast.warn("Please provide the class name");
       return;
     }
+    try {
+      await mutation.mutateAsync({ ClassName });
+      setOpen(false);
+      setClassName("");
+    } catch (error) {
+      console.error("Error while adding class:", error);
+    }
   };
+
+  // Fetch paginated classes using React Query
+  const { data: TABLE_ROWS, isFetching } = useQuery(
+    ["getTimeTableClasses", page, search], // Add page to the query key to refetch on page change
+    () => getAllClassesApiGetCall(page, limit, search), // Pass page and limit to API call
+    {
+      keepPreviousData: true, // Keep previous data while fetching new data
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  //console.log(TABLE_ROWS);
+
+  // Pagination handler
+  const handleNextPage = () => {
+    if (page < TABLE_ROWS?.totalPages) setPage((prev) => prev + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (page > 1) setPage((prev) => prev - 1);
+  };
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+    setPage(1); // Reset to the first page on search
+  };
+
   return (
     <Card className="h-full w-full">
       <CardHeader floated={false} shadow={false} className="rounded-none">
@@ -104,6 +112,7 @@ export function SortableTable() {
           </div>
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
             <Button
+              disabled={mutation.isLoading}
               onClick={handleOpen}
               className="flex items-center gap-3"
               size="sm"
@@ -163,88 +172,109 @@ export function SortableTable() {
             <Input
               label="Search"
               icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+              value={search}
+              onChange={handleSearchChange} // Add search handler
             />
           </div>
         </div>
       </CardHeader>
       <CardBody className="overflow-scroll px-0">
-        <table className="mt-4 w-full min-w-max table-auto text-left">
-          <thead>
-            <tr>
-              {TABLE_HEAD.map((head, index) => (
-                <th
-                  key={head}
-                  className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
-                >
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
+        {isFetching ? (
+          <Typography variant="small" color="blue-gray" className="text-center">
+            Loading...
+          </Typography>
+        ) : (
+          <table className="mt-4 w-full min-w-max table-auto text-left">
+            <thead>
+              <tr>
+                {TABLE_HEAD.map((head, index) => (
+                  <th
+                    key={head}
+                    className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
                   >
-                    {head}{" "}
-                    {index !== TABLE_HEAD.length - 1 && (
-                      <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4" />
-                    )}
-                  </Typography>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {TABLE_ROWS.map(({ name, date }, index) => {
-              const isLast = index === TABLE_ROWS.length - 1;
-              const classes = isLast
-                ? "p-4"
-                : "p-4 border-b border-blue-gray-50";
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
+                    >
+                      {head}{" "}
+                      {index !== TABLE_HEAD.length - 1 && (
+                        <ChevronUpDownIcon
+                          strokeWidth={2}
+                          className="h-4 w-4"
+                        />
+                      )}
+                    </Typography>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {TABLE_ROWS?.data?.map((classesData, index) => {
+                const isLast = index === TABLE_ROWS.length - 1;
+                const classes = isLast
+                  ? "p-4"
+                  : "p-4 border-b border-blue-gray-50";
 
-              return (
-                <tr key={name}>
-                  <td className={classes}>
-                    <div className="flex items-center gap-3">
+                return (
+                  <tr key={name}>
+                    <td className={classes}>
+                      <div className="flex items-center gap-3">
+                        <div className="flex flex-col">
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {classesData.ClassName}
+                          </Typography>
+                        </div>
+                      </div>
+                    </td>
+                    <td className={classes}>
                       <div className="flex flex-col">
                         <Typography
                           variant="small"
                           color="blue-gray"
                           className="font-normal"
                         >
-                          {name}
+                          {classesData?.createdAt?.split("T")[0]}
                         </Typography>
                       </div>
-                    </div>
-                  </td>
-                  <td className={classes}>
-                    <div className="flex flex-col">
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
-                        {date}
-                      </Typography>
-                    </div>
-                  </td>
-                  <td onClick={handleOpen} className={classes}>
-                    <Tooltip content="Edit Class">
-                      <IconButton variant="text">
-                        <PencilIcon className="h-4 w-4" />
-                      </IconButton>
-                    </Tooltip>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    </td>
+                    <td onClick={handleOpen} className={classes}>
+                      <Tooltip content="Edit Class">
+                        <IconButton variant="text">
+                          <PencilIcon className="h-4 w-4" />
+                        </IconButton>
+                      </Tooltip>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
       </CardBody>
       <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
         <Typography variant="small" color="blue-gray" className="font-normal">
-          Page 1 of 10
+          Page {page} of {TABLE_ROWS?.totalPages || 1}
         </Typography>
         <div className="flex gap-2">
-          <Button variant="outlined" size="sm">
+          <Button
+            variant="outlined"
+            size="sm"
+            disabled={page === 1}
+            onClick={handlePrevPage}
+          >
             Previous
           </Button>
-          <Button variant="outlined" size="sm">
+          <Button
+            variant="outlined"
+            size="sm"
+            disabled={page === TABLE_ROWS?.totalPages}
+            onClick={handleNextPage}
+          >
             Next
           </Button>
         </div>
