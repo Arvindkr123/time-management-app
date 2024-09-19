@@ -12,7 +12,6 @@ import {
   CardBody,
   CardFooter,
   IconButton,
-  Tooltip,
   Dialog,
   DialogBody,
 } from "@material-tailwind/react";
@@ -163,10 +162,10 @@ export function SortableTable() {
           </div>
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
             <Button
-              disabled={addClassMutation.isLoading}
               onClick={() => {
                 setOpen(true);
-                setEditClassNameId(null); // Clear edit ID to add new class
+                setEditClassNameId(null);
+                setClassName(""); // Clear edit ID to add new class
               }}
               className="flex items-center gap-3"
               size="sm"
@@ -297,29 +296,26 @@ export function SortableTable() {
                         </Typography>
                       </div>
                     </td>
-                    <td
-                      onClick={() => {
-                        setEditClassNameId(classesData._id);
-                        setClassName(classesData.ClassName);
-                        setOpen(true);
-                      }}
-                      className={classes}
-                    >
-                      <Tooltip content="Edit Class">
-                        <IconButton variant="text">
-                          <PencilIcon className="h-4 w-4" />
-                        </IconButton>
-                      </Tooltip>
+                    <td className={classes}>
+                      <IconButton
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setEditClassNameId(classesData._id);
+                          setClassName(classesData.ClassName);
+                          setOpen(true);
+                        }}
+                        variant="text"
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                      </IconButton>
                     </td>
                     <td
                       onClick={() => singleClassDeleteHandler(classesData?._id)}
                       className={classes}
                     >
-                      <Tooltip content="Delete Class">
-                        <IconButton variant="text">
-                          <TrashIcon className="h-4 w-4" />
-                        </IconButton>
-                      </Tooltip>
+                      <IconButton variant="text">
+                        <TrashIcon className="h-4 w-4" />
+                      </IconButton>
                     </td>
                   </tr>
                 );
