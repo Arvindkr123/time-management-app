@@ -25,6 +25,7 @@ import {
   getAllSubjectsApiGetCall,
   updateSingleSubjectDataByApiDeleteCall,
 } from "../helpers/api/time-table.subject";
+import { useDebounce } from "../hooks/useDebounce";
 const TABLE_HEAD = ["Subject Name", "Created At", "", ""];
 
 const AddSubject = () => {
@@ -45,6 +46,8 @@ export function SortableTable() {
   const [search, setSearch] = useState("");
   const [editSubjectNameId, setEditSubjectNameId] = useState(null);
 
+  const debounceSearch = useDebounce(search, 500);
+
   const handleOpen = () => setOpen(!open);
 
   const queryClient = useQueryClient();
@@ -54,7 +57,11 @@ export function SortableTable() {
       if (data.success) {
         toast.success("Subject Name added successfully!"); // Add toast on success
       }
-      queryClient.invalidateQueries(["getTimeTableSubjects", page, search]);
+      queryClient.invalidateQueries([
+        "getTimeTableSubjects",
+        page,
+        debounceSearch,
+      ]);
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || "Error adding class"); // Add toast on error
@@ -64,7 +71,11 @@ export function SortableTable() {
   const deleteMutation = useMutation(deleteSingleSubjectDataByApiDeleteCall, {
     onSuccess: () => {
       toast.success("Subject Name deleted successfully!");
-      queryClient.invalidateQueries(["getTimeTableSubjects", page, search]); // Refetch the data
+      queryClient.invalidateQueries([
+        "getTimeTableSubjects",
+        page,
+        debounceSearch,
+      ]); // Refetch the data
     },
     onError: (error) => {
       toast.error(
@@ -79,7 +90,11 @@ export function SortableTable() {
     {
       onSuccess: () => {
         toast.success("Subject Name updated successfully!");
-        queryClient.invalidateQueries(["getTimeTableSubjects", page, search]);
+        queryClient.invalidateQueries([
+          "getTimeTableSubjects",
+          page,
+          debounceSearch,
+        ]);
         setOpen(false);
       },
       onError: (error) => {
@@ -122,8 +137,8 @@ export function SortableTable() {
   };
 
   const { data: TABLE_ROWS, isFetching } = useQuery(
-    ["getTimeTableSubjects", page, search], // Add page to the query key to refetch on page change
-    () => getAllSubjectsApiGetCall(page, limit, search), // Pass page and limit to API call
+    ["getTimeTableSubjects", page, debounceSearch], // Add page to the query key to refetch on page change
+    () => getAllSubjectsApiGetCall(page, limit, debounceSearch), // Pass page and limit to API call
     {
       keepPreviousData: true, // Keep previous data while fetching new data
       refetchOnWindowFocus: false,

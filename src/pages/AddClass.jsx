@@ -24,6 +24,7 @@ import {
   getAllClassesApiGetCall,
   updateSingleClassDataByApiDeleteCall,
 } from "../helpers/api/time-table.class";
+import { useDebounce } from "../hooks/useDebounce";
 
 const TABLE_HEAD = ["Class Name", "Created At", "", ""];
 
@@ -44,6 +45,8 @@ export function SortableTable() {
   const [search, setSearch] = useState("");
   const [editClassNameId, setEditClassNameId] = useState(null);
 
+  const debounceSearch = useDebounce(search, 500);
+
   const handleOpen = () => setOpen(!open);
 
   const queryClient = useQueryClient();
@@ -53,7 +56,11 @@ export function SortableTable() {
       if (data.success) {
         toast.success("Class Name added successfully!"); // Add toast on success
       }
-      queryClient.invalidateQueries(["getTimeTableClasses", page, search]);
+      queryClient.invalidateQueries([
+        "getTimeTableClasses",
+        page,
+        debounceSearch,
+      ]);
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || "Error adding class"); // Add toast on error
@@ -63,7 +70,11 @@ export function SortableTable() {
   const deleteMutation = useMutation(deleteSingleClassDataByApiDeleteCall, {
     onSuccess: () => {
       toast.success("Class deleted successfully!");
-      queryClient.invalidateQueries(["getTimeTableClasses", page, search]); // Refetch the data
+      queryClient.invalidateQueries([
+        "getTimeTableClasses",
+        page,
+        debounceSearch,
+      ]); // Refetch the data
     },
     onError: (error) => {
       toast.error(
@@ -78,7 +89,11 @@ export function SortableTable() {
     {
       onSuccess: () => {
         toast.success("Class updated successfully!");
-        queryClient.invalidateQueries(["getTimeTableClasses", page, search]);
+        queryClient.invalidateQueries([
+          "getTimeTableClasses",
+          page,
+          debounceSearch,
+        ]);
         setOpen(false);
       },
       onError: (error) => {
@@ -121,8 +136,8 @@ export function SortableTable() {
   };
 
   const { data: TABLE_ROWS, isFetching } = useQuery(
-    ["getTimeTableClasses", page, search], // Add page to the query key to refetch on page change
-    () => getAllClassesApiGetCall(page, limit, search), // Pass page and limit to API call
+    ["getTimeTableClasses", page, debounceSearch], // Add page to the query key to refetch on page change
+    () => getAllClassesApiGetCall(page, limit, debounceSearch), // Pass page and limit to API call
     {
       keepPreviousData: true, // Keep previous data while fetching new data
       refetchOnWindowFocus: false,
