@@ -20,3 +20,18 @@ export const getAllClassesApiGetCall = async (
   });
   return res.data;
 };
+
+export const deleteSingleClassDataByApiDeleteCall = async (classsId) => {
+  const res = await axios.delete(
+    `${BACKEND_BASE_URL}/api/timetable/class/${classsId}`
+  );
+  return res.data;
+};
+
+export const updateSingleClassDataByApiDeleteCall = async (updatedClass) => {
+  const { id, ClassName } = updatedClass;
+  const res = await axios.put(`${BACKEND_BASE_URL}/api/timetable/class/${id}`, {
+    ClassName,
+  });
+  return res.data;
+};

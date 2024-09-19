@@ -2,7 +2,7 @@ import {
   MagnifyingGlassIcon,
   ChevronUpDownIcon,
 } from "@heroicons/react/24/outline";
-import { PencilIcon, UserPlusIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, UserPlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import {
   Card,
   CardHeader,
@@ -21,10 +21,12 @@ import { toast } from "react-toastify";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import {
   addClassApiPostCall,
+  deleteSingleClassDataByApiDeleteCall,
   getAllClassesApiGetCall,
+  updateSingleClassDataByApiDeleteCall,
 } from "../helpers/api/time-table.class";
 
-const TABLE_HEAD = ["Class Name", "Created At", ""];
+const TABLE_HEAD = ["Class Name", "Created At", "", ""];
 
 const AddClass = () => {
   return (
@@ -41,21 +43,53 @@ export function SortableTable() {
   const [page, setPage] = useState(1); // Add state for current page
   const [limit] = useState(10); // Optional: Set a default limit per page
   const [search, setSearch] = useState("");
+  const [editClassNameId, setEditClassNameId] = useState(null);
 
   const handleOpen = () => setOpen(!open);
 
   const queryClient = useQueryClient();
-  const mutation = useMutation(addClassApiPostCall, {
+
+  const addClassMutation = useMutation(addClassApiPostCall, {
     onSuccess: (data) => {
-      if (data.data.success) {
+      if (data.success) {
         toast.success("Class Name added successfully!"); // Add toast on success
       }
       queryClient.invalidateQueries(["getTimeTableClasses", page, search]);
     },
     onError: (error) => {
-      toast.error(error.response.data.message); // Add toast on error
+      toast.error(error.response?.data?.message || "Error adding class"); // Add toast on error
     },
   });
+
+  const deleteMutation = useMutation(deleteSingleClassDataByApiDeleteCall, {
+    onSuccess: () => {
+      toast.success("Class deleted successfully!");
+      queryClient.invalidateQueries(["getTimeTableClasses", page, search]); // Refetch the data
+    },
+    onError: (error) => {
+      toast.error(
+        "Error deleting class: " +
+          (error.response?.data?.message || error.message)
+      );
+    },
+  });
+
+  const updateClassMutation = useMutation(
+    updateSingleClassDataByApiDeleteCall,
+    {
+      onSuccess: () => {
+        toast.success("Class updated successfully!");
+        queryClient.invalidateQueries(["getTimeTableClasses", page, search]);
+        setOpen(false);
+      },
+      onError: (error) => {
+        toast.error(
+          "Error updating class: " +
+            (error.response?.data?.message || error.message)
+        );
+      },
+    }
+  );
 
   const onClassSubmitHandler = async (e) => {
     e.preventDefault();
@@ -63,16 +97,30 @@ export function SortableTable() {
       toast.warn("Please provide the class name");
       return;
     }
-    try {
-      await mutation.mutateAsync({ ClassName });
-      setOpen(false);
-      setClassName("");
-    } catch (error) {
-      console.error("Error while adding class:", error);
+    if (editClassNameId) {
+      try {
+        await updateClassMutation.mutateAsync({
+          id: editClassNameId,
+          ClassName,
+        });
+        setEditClassNameId(null);
+        setOpen(false);
+        setClassName(""); // Clear edit ID after update
+      } catch (error) {
+        console.error("Error while updating class:", error);
+      }
+    } else {
+      try {
+        await addClassMutation.mutateAsync({ ClassName });
+        setOpen(false);
+        setClassName("");
+      } catch (error) {
+        console.error("Error while adding class:", error);
+      }
     }
+    setClassName("");
   };
 
-  // Fetch paginated classes using React Query
   const { data: TABLE_ROWS, isFetching } = useQuery(
     ["getTimeTableClasses", page, search], // Add page to the query key to refetch on page change
     () => getAllClassesApiGetCall(page, limit, search), // Pass page and limit to API call
@@ -82,9 +130,6 @@ export function SortableTable() {
     }
   );
 
-  //console.log(TABLE_ROWS);
-
-  // Pagination handler
   const handleNextPage = () => {
     if (page < TABLE_ROWS?.totalPages) setPage((prev) => prev + 1);
   };
@@ -98,22 +143,31 @@ export function SortableTable() {
     setPage(1); // Reset to the first page on search
   };
 
+  const singleClassDeleteHandler = (classId) => {
+    if (window.confirm("Are you sure you want to delete this class?")) {
+      deleteMutation.mutate(classId);
+    }
+  };
+
   return (
     <Card className="h-full w-full">
       <CardHeader floated={false} shadow={false} className="rounded-none">
         <div className="mb-8 flex items-center justify-between gap-8">
           <div>
             <Typography variant="h5" color="blue-gray">
-              Classess list
+              Classes list
             </Typography>
             <Typography color="gray" className="mt-1 font-normal">
-              See information about all classess
+              See information about all classes
             </Typography>
           </div>
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
             <Button
-              disabled={mutation.isLoading}
-              onClick={handleOpen}
+              disabled={addClassMutation.isLoading}
+              onClick={() => {
+                setOpen(true);
+                setEditClassNameId(null); // Clear edit ID to add new class
+              }}
               className="flex items-center gap-3"
               size="sm"
             >
@@ -122,13 +176,13 @@ export function SortableTable() {
           </div>
         </div>
 
-        {/* Dialog for Add class start here ------ */}
+        {/* Dialog for Add/Update class */}
         <Dialog open={open} handler={handleOpen}>
           <Card color="transparent" shadow={false} className="p-5">
             <Typography variant="h4" color="blue-gray">
-              Add Class
+              {editClassNameId ? "Update Class" : "Add Class"}
             </Typography>
-            <form className="mt-8 mb-2">
+            <form className="mt-8 mb-2" onSubmit={onClassSubmitHandler}>
               <div className="mb-1 flex flex-col gap-6">
                 <Typography variant="h6" color="blue-gray" className="-mb-3">
                   Class Name
@@ -137,8 +191,8 @@ export function SortableTable() {
                   value={ClassName}
                   onChange={(e) => setClassName(e.target.value)}
                   size="lg"
-                  placeholder="classs name"
-                  className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
+                  placeholder="Class name"
+                  className="!border-t-blue-gray-200 focus:!border-t-gray-900"
                   labelProps={{
                     className: "before:content-none after:content-none",
                   }}
@@ -147,14 +201,16 @@ export function SortableTable() {
 
               <Button
                 type="submit"
-                onClick={onClassSubmitHandler}
                 className="mt-6"
                 fullWidth
+                disabled={
+                  addClassMutation.isLoading || updateClassMutation.isLoading
+                }
               >
-                add class
+                {editClassNameId ? "Update Class" : "Add Class"}
               </Button>
               <Button
-                onClick={handleOpen}
+                onClick={() => setOpen(false)}
                 className="mt-3"
                 variant="outlined"
                 fullWidth
@@ -165,7 +221,6 @@ export function SortableTable() {
           </Card>
           <DialogBody></DialogBody>
         </Dialog>
-        {/* Dialog for Add class end here ------ */}
 
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           <div className="w-full">
@@ -211,13 +266,13 @@ export function SortableTable() {
             </thead>
             <tbody>
               {TABLE_ROWS?.data?.map((classesData, index) => {
-                const isLast = index === TABLE_ROWS.length - 1;
+                const isLast = index === TABLE_ROWS.data.length - 1;
                 const classes = isLast
                   ? "p-4"
                   : "p-4 border-b border-blue-gray-50";
 
                 return (
-                  <tr key={name}>
+                  <tr key={classesData?._id}>
                     <td className={classes}>
                       <div className="flex items-center gap-3">
                         <div className="flex flex-col">
@@ -226,7 +281,7 @@ export function SortableTable() {
                             color="blue-gray"
                             className="font-normal"
                           >
-                            {classesData.ClassName}
+                            {classesData?.ClassName}
                           </Typography>
                         </div>
                       </div>
@@ -242,10 +297,27 @@ export function SortableTable() {
                         </Typography>
                       </div>
                     </td>
-                    <td onClick={handleOpen} className={classes}>
+                    <td
+                      onClick={() => {
+                        setEditClassNameId(classesData._id);
+                        setClassName(classesData.ClassName);
+                        setOpen(true);
+                      }}
+                      className={classes}
+                    >
                       <Tooltip content="Edit Class">
                         <IconButton variant="text">
                           <PencilIcon className="h-4 w-4" />
+                        </IconButton>
+                      </Tooltip>
+                    </td>
+                    <td
+                      onClick={() => singleClassDeleteHandler(classesData?._id)}
+                      className={classes}
+                    >
+                      <Tooltip content="Delete Class">
+                        <IconButton variant="text">
+                          <TrashIcon className="h-4 w-4" />
                         </IconButton>
                       </Tooltip>
                     </td>

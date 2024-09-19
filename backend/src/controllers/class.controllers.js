@@ -75,3 +75,50 @@ export const getAllTimeTableClassController = async (req, res) => {
       .json({ success: false, error: "Error while getting classes" });
   }
 };
+
+export const deleteSingleClassTimeTableController = async (req, res) => {
+  try {
+    const singleClassData = await ClassTableModel.findById(req.params.id);
+    if (!singleClassData) {
+      return res.status(404).json({
+        success: false,
+        message: "Single class data not found",
+      });
+    }
+
+    await singleClassData.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      message: "deleted single class name successfully!",
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, error: "Error while getting classes" });
+  }
+};
+
+export const updateSingleClassTimeTableController = async (req, res) => {
+  try {
+    const singleClassData = await ClassTableModel.findById(req.params.id);
+    if (!singleClassData) {
+      return res.status(404).json({
+        success: false,
+        message: "Single class data not found",
+      });
+    }
+
+    singleClassData.ClassName = req.body.ClassName || singleClassData.ClassName;
+    await singleClassData.save();
+
+    res.status(200).json({
+      success: true,
+      message: "updated single class name successfully!",
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, error: "Error while getting classes" });
+  }
+};
