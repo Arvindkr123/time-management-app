@@ -4,9 +4,12 @@ import {
   deleteSingleTeacherTimeTableController,
   getAllTimeTableTeacherController,
   updateSingleTeacherTimeTableController,
+  getAllTimeTableTeachersDataController,
 } from "../controllers/teacher.controllers.js";
 
 const router = Router();
+
+router.get("/all-teachers", getAllTimeTableTeachersDataController);
 
 router
   .route("/")

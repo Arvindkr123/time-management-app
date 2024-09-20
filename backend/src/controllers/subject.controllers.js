@@ -124,3 +124,12 @@ export const updateSingleSubjectTimeTableController = async (req, res) => {
       .json({ success: false, error: "Error while updating teachers" });
   }
 };
+
+export const getAllSubjectsOfTimeTableDataController = async (req, res) => {
+  try {
+    const subjectsData = await SubjectTableModel.find();
+    res.status(200).json(subjectsData);
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Something went wrong" });
+  }
+};

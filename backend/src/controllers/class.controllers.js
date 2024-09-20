@@ -122,3 +122,14 @@ export const updateSingleClassTimeTableController = async (req, res) => {
       .json({ success: false, error: "Error while getting classes" });
   }
 };
+
+export const getAllClassofTimeTableController = async (req, res) => {
+  try {
+    const allClassData = await ClassTableModel.find();
+    res.status(200).json(allClassData);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, error: "Error while getting classes" });
+  }
+};

@@ -4,9 +4,12 @@ import {
   deleteSingleSubjectTimeTableController,
   getAllTimeTableSubjectController,
   updateSingleSubjectTimeTableController,
+  getAllSubjectsOfTimeTableDataController,
 } from "../controllers/subject.controllers.js";
 
 const router = Router();
+
+router.get("/all-subjects", getAllSubjectsOfTimeTableDataController);
 
 router
   .route("/")

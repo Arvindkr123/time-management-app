@@ -125,3 +125,14 @@ export const updateSingleTeacherTimeTableController = async (req, res) => {
       .json({ success: false, error: "Error while updating teachers" });
   }
 };
+
+export const getAllTimeTableTeachersDataController = async (req, res) => {
+  try {
+    const resData = await TeacherTableModel.find();
+    res.status(200).json(resData);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, error: "error while getting all teachers data" });
+  }
+};
