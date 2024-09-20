@@ -3,20 +3,41 @@ import mongoose from "mongoose";
 const classTimeTableSchema = new mongoose.Schema(
   {
     teacherName: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "TeacherTimeTable",
+      type: String,
     },
-    subjectName: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "SubjectTimeTable",
+    sectionName: {
+      type: String,
       required: true,
     },
-    ClassName: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "ClassTimeTable",
-    },
-    classDay: { type: String, required: true },
-    classTime: { type: String, required: true },
+    classSchedules: [
+      {
+        classDay: {
+          type: String,
+          required: true,
+          enum: [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+          ], // to restrict the values for days
+        },
+        schedule: [
+          {
+            classTime: { type: String, required: true }, // stores time like "10:00 AM"
+            subjectName: {
+              type: String,
+              required: true,
+            },
+            ClassName: {
+              type: String,
+            },
+          },
+        ],
+      },
+    ],
   },
   { timestamps: true }
 );

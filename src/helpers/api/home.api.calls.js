@@ -21,3 +21,11 @@ export const getAllSubjectsOfTimeTableApiCall = async () => {
   );
   return res.data;
 };
+
+export const addClassTimeTableDataApiCall = async (classTimeTableData) => {
+  const res = await axios.post(
+    `${BACKEND_BASE_URL}/api/addclassTimeTable`,
+    classTimeTableData
+  );
+  return res.data;
+};

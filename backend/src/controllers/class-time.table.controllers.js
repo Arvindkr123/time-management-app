@@ -3,33 +3,74 @@ import ClassTimeTableModel from "../models/class.time.table.models.js";
 /* eslint-disable no-unused-vars */
 export const addClassTimeTableController = async (req, res) => {
   try {
-    //     {
-    //     "teacherName": "66ebf7278ca3af771a91c03d",
-    //     "subjectName": "66ec0a297d54c4a0146c6d86",
-    //     "ClassName": "66ebbf5335f8d2b999d6f03b",
-    //     "classDay": "Wednesday",
-    //     "classTime": "22:00"
-    // }
-
+    // Validate required fields
     if (
-      req.body.subjectName === "" ||
-      req.body.classDay === "" ||
-      req.body.classTime === ""
+      !req.body.teacherName ||
+      !req.body.subjectName ||
+      !req.body.classDay ||
+      !req.body.classTime
     ) {
       return res.status(400).json({
         message:
-          "Please fill all fields likes subjectName, Class day, and ClassTime",
+          "Please fill all fields like teacherName, subjectName, classDay, and classTime",
       });
     }
 
-    const newClassTimeTable = new ClassTimeTableModel(req.body);
-    await newClassTimeTable.save();
-    res
-      .status(200)
-      .json({ success: true, message: "added class time table successfully!" });
+    // Extract data from request body
+    const {
+      teacherName,
+      subjectName,
+      ClassName,
+      classDay,
+      classTime,
+      sectionName,
+    } = req.body;
+
+    // Find the existing timetable for the teacher
+    let classTimeTable = await ClassTimeTableModel.findOne({ teacherName });
+
+    if (!classTimeTable) {
+      // If no timetable exists for the teacher, create a new one
+      classTimeTable = new ClassTimeTableModel({
+        teacherName,
+        sectionName,
+        classSchedules: [
+          {
+            classDay,
+            schedule: [{ classTime, subjectName, ClassName }],
+          },
+        ],
+      });
+    } else {
+      // If a timetable exists, check if the day already has a schedule
+      const existingDay = classTimeTable.classSchedules.find(
+        (schedule) => schedule.classDay === classDay
+      );
+
+      if (existingDay) {
+        // If the day already exists, add a new class time to that day's schedule
+        existingDay.schedule.push({ classTime, subjectName, ClassName });
+      } else {
+        // If the day does not exist, add a new day with the class schedule
+        classTimeTable.classSchedules.push({
+          classDay,
+          schedule: [{ classTime, subjectName, ClassName }],
+        });
+      }
+    }
+
+    // Save the updated or new class timetable
+    await classTimeTable.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Added class time table successfully!",
+    });
   } catch (error) {
-    res
-      .status(200)
-      .json({ success: false, error: "Error while adding class time table" });
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      error: "Error while adding class time table",
+    });
   }
 };

@@ -22,12 +22,14 @@ import { useState } from "react";
 import TimePicker from "react-time-picker";
 import "react-time-picker/dist/TimePicker.css";
 import "react-clock/dist/Clock.css"; // For proper clock UI if you want to enable the clock
-import { useQuery, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import {
+  addClassTimeTableDataApiCall,
   getAllClassesOfTimeTable,
   getAllSubjectsOfTimeTableApiCall,
   getAllTeachersOfTimeTableApiCall,
 } from "../helpers/api/home.api.calls";
+import { toast } from "react-toastify";
 
 const TABLE_HEAD = [
   "Monday",
@@ -90,13 +92,33 @@ const TABLE_ROWS = [
 const Home = () => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen((cur) => !cur);
-  const [time, setTime] = useState("10:00");
+  const [time, setTime] = useState("10:00 AM"); // Default time
   const [addClassTimeTableData, setAddClassTimeTableData] = useState({
     teacherName: "",
+    sectionName: "",
     subjectName: "",
     ClassName: "",
     classDay: "",
-    classTime: "",
+    classTime: "10:00 AM", // Default to 10:00 AM
+  });
+
+  const timeSelectHandler = (timeData) => {
+    // This will give time in AM/PM format
+    setTime(timeData);
+    setAddClassTimeTableData((prev) => ({ ...prev, classTime: timeData }));
+  };
+  const queryClient = useQueryClient();
+
+  const addClassTimeTableMutation = useMutation(addClassTimeTableDataApiCall, {
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success("Added Class TimeTable successfully!"); // Add toast on success
+      }
+      queryClient.invalidateQueries(["getClassTimeTable"]);
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Error adding class"); // Add toast on error
+    },
   });
 
   const days = [
@@ -108,8 +130,6 @@ const Home = () => {
     "Saturday",
     "Sunday",
   ];
-
-  const queryClient = useQueryClient();
 
   const { data: allTimeTableClassesOfData } = useQuery(
     ["getTimeTableAllClasses"], // Add page to the query key to refetch on page change
@@ -136,15 +156,30 @@ const Home = () => {
     }
   );
 
-  const timeSelectHandler = (timeData) => {
-    console.log(timeData);
-    setTime(timeData);
-    setAddClassTimeTableData((prev) => ({ ...prev, classTime: timeData }));
-  };
-
   const onAddClassSubmitHandler = (e) => {
     e.preventDefault();
-    console.log(addClassTimeTableData);
+    //console.log(addClassTimeTableData);
+    if (addClassTimeTableData.subjectName === "") {
+      alert("Please provide the subject name");
+      return;
+    }
+
+    if (addClassTimeTableData.classDay === "") {
+      alert("Please select the class day");
+      return;
+    }
+
+    addClassTimeTableMutation.mutate(addClassTimeTableData);
+    setOpen(false);
+    setTime("10:00 AM");
+    setAddClassTimeTableData({
+      sectionName: "",
+      teacherName: "",
+      subjectName: "",
+      ClassName: "",
+      classDay: "",
+      classTime: "10:00 AM",
+    });
   };
 
   return (
@@ -198,6 +233,17 @@ const Home = () => {
             <Typography variant="h4" color="blue-gray">
               Add Class Time Table
             </Typography>
+            <Input
+              label="Section Name"
+              type="text"
+              value={addClassTimeTableData?.sectionName}
+              onChange={(e) =>
+                setAddClassTimeTableData((prev) => ({
+                  ...prev,
+                  sectionName: e.target.value,
+                }))
+              }
+            />
             <Select
               value={addClassTimeTableData?.teacherName}
               onChange={(e) =>
@@ -209,7 +255,10 @@ const Home = () => {
               label="Select Teacher"
             >
               {allTimeTableTeachersOfData?.map((singleTeacher) => (
-                <Option key={singleTeacher?._id} value={singleTeacher?._id}>
+                <Option
+                  key={singleTeacher?._id}
+                  value={singleTeacher?.TeacherName}
+                >
                   {singleTeacher?.TeacherName}
                 </Option>
               ))}
@@ -225,7 +274,7 @@ const Home = () => {
               label="Select Class"
             >
               {allTimeTableClassesOfData?.map((singleClass) => (
-                <Option key={singleClass?._id} value={singleClass?._id}>
+                <Option key={singleClass?._id} value={singleClass?.ClassName}>
                   {singleClass?.ClassName}
                 </Option>
               ))}
@@ -241,7 +290,10 @@ const Home = () => {
               label="Select Subject"
             >
               {allTimeTableSubjectsOfData?.map((singleSubject) => (
-                <Option key={singleSubject?._id} value={singleSubject?._id}>
+                <Option
+                  key={singleSubject?._id}
+                  value={singleSubject?.SubjectName}
+                >
                   {singleSubject?.SubjectName}
                 </Option>
               ))}
@@ -267,8 +319,8 @@ const Home = () => {
               <TimePicker
                 onChange={(e) => timeSelectHandler(e)}
                 value={time}
-                disableClock={true}
-                format="h:mm a"
+                disableClock={true} // Hide the clock interface
+                format="h:mm a" // Format time to 12-hour with AM/PM
               />
               <div>Selected Time: {time}</div>
             </div>
