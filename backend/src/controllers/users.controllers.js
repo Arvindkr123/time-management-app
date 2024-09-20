@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import UserModel from "../models/users.models.js";
 import { JWT_SECRET } from "../config/config.js";
 

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/prop-types */
 import {
   useState,
@@ -11,17 +12,21 @@ import axios from "axios";
 
 const AuthContext = createContext();
 
+const BACKEND_BASE_URL = import.meta.env.VITE_APP_BACKEND_BASE_URL;
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null); // Store user details
   const [accessToken, setAccessToken] = useState(null); // Store access token in memory
+  // console.log(accessToken);
   const navigate = useNavigate();
 
   // Function to fetch new access token using refresh token
   const refreshAccessToken = async () => {
     try {
-      const response = await axios.get("/auth/refresh", {
+      const response = await axios.get(`${BACKEND_BASE_URL}/api/auth/refresh`, {
         withCredentials: true,
       });
+      // console.log(response);
       setAccessToken(response.data.accessToken); // Store new access token in memory
       return response.data.accessToken;
     } catch (error) {
@@ -35,7 +40,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const token = await refreshAccessToken(); // Refresh token if needed
       if (token) {
-        const response = await axios.get("/auth/me", {
+        const response = await axios.get(`${BACKEND_BASE_URL}/api/auth/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -94,7 +99,9 @@ export const AuthProvider = ({ children }) => {
   }, [accessToken]);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, accessToken }}>
+    <AuthContext.Provider
+      value={{ user, setUser, accessToken, setAccessToken }}
+    >
       {children}
     </AuthContext.Provider>
   );
