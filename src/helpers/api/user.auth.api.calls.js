@@ -47,3 +47,19 @@ export const loginUserApiCall = async (userData) => {
     };
   }
 };
+
+export const logoutUserApiCall = async () => {
+  try {
+    const res = await axios.post(`${BACKEND_BASE_URL}/api/auth/logout`, {
+      withCredentials: true, // Send credentials (cookies)
+    });
+    return res.data; // Success response data
+  } catch (error) {
+    console.error("Login failed:", error?.response?.data || error.message);
+    // Optionally return error response to handle in the frontend
+    return {
+      success: false,
+      message: error?.response?.data?.message || "Something went wrong",
+    };
+  }
+};
