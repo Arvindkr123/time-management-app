@@ -31,16 +31,9 @@ import {
   getAllTeachersOfTimeTableApiCall,
 } from "../helpers/api/home.api.calls";
 import { toast } from "react-toastify";
+import { useDebounce } from "../hooks/useDebounce";
 
-const TABLE_HEAD = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-];
+const TABLE_HEAD = ["Day", "Time", "Subject", "Teacher"];
 
 const Home = () => {
   const [open, setOpen] = useState(false);
@@ -53,6 +46,10 @@ const Home = () => {
     ClassName: "",
     classDay: "",
     classTime: "10:00 AM", // Default to 10:00 AM
+  });
+  const [searchClassTimeSchedule, setSearchClassTimeSchedule] = useState({
+    ClassName: "",
+    sectionName: "",
   });
 
   const timeSelectHandler = (timeData) => {
@@ -109,15 +106,23 @@ const Home = () => {
     }
   );
 
+  const debounceSearch = useDebounce(
+    `${addClassTimeTableData?.ClassName}-${addClassTimeTableData?.sectionName}`,
+    1000
+  );
+
   const { data: getAllAddClassTimeTableData } = useQuery(
-    ["getAllAddClassTimeTable", 1],
-    () => getAllAddClassTimeTableDataApiCall()
+    ["getAllAddClassTimeTable", debounceSearch],
+    () => getAllAddClassTimeTableDataApiCall(debounceSearch),
+    {
+      keepPreviousData: true, // Keep previous data while fetching new data
+      refetchOnWindowFocus: false,
+    }
   );
 
   console.log("Fetched Class TimeTable Data:", getAllAddClassTimeTableData);
 
-  console.log(getAllAddClassTimeTableData);
-
+  // console.log(getAllAddClassTimeTableData);
   const onAddClassSubmitHandler = (e) => {
     e.preventDefault();
     //console.log(addClassTimeTableData);
@@ -167,17 +172,31 @@ const Home = () => {
             </Button>
           </div>
         </div>
-        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+        <div className="flex flex-col items-center gap-4 md:flex-row">
           <div className="w-full md:w-72">
             <Input
-              label="Search"
+              label="Search By ClassName"
               icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+              value={searchClassTimeSchedule?.ClassName}
+              onChange={(e) =>
+                setSearchClassTimeSchedule((prev) => ({
+                  ...prev,
+                  ClassName: e.target.value,
+                }))
+              }
             />
           </div>
           <div className="w-full md:w-72">
             <Input
-              label="Search"
+              label="Search By Section Name"
               icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+              value={searchClassTimeSchedule?.sectionName}
+              onChange={(e) =>
+                setSearchClassTimeSchedule((prev) => ({
+                  ...prev,
+                  sectionName: e.target.value,
+                }))
+              }
             />
           </div>
         </div>
@@ -304,8 +323,22 @@ const Home = () => {
       </Dialog>
       {/* ------------------ Add Class Time table dialoag End here ----------------------- */}
 
-      <CardBody className="overflow-scroll px-0">
+      <CardBody className="overflow-scroll px-0 p-5">
         <table className="mt-4 w-full min-w-max table-auto text-left">
+          <caption>
+            <Typography variant="h4" color="blue-gray" className="font-bold">
+              Class Name :{" "}
+              {searchClassTimeSchedule?.ClassName === ""
+                ? "Please Search Class Name to See Class Time Table"
+                : searchClassTimeSchedule?.ClassName}
+            </Typography>
+            <Typography variant="h5" color="blue-gray" className="font-bold">
+              Section Name :{" "}
+              {searchClassTimeSchedule?.sectionName === ""
+                ? "Please Search Section Name to See Class Time Table"
+                : searchClassTimeSchedule?.sectionName}
+            </Typography>
+          </caption>
           <thead>
             <tr>
               {TABLE_HEAD.map((head, index) => (
@@ -328,171 +361,49 @@ const Home = () => {
             </tr>
           </thead>
           <tbody>
-            {getAllAddClassTimeTableData?.map((timeTableClassData, index) => {
-              const isLast = index === getAllAddClassTimeTableData?.length - 1;
-              const classes = isLast
-                ? "p-4"
-                : "p-4 border-b border-blue-gray-50";
-
-              return (
-                <tr key={timeTableClassData?._id}>
-                  <td className={classes}>
-                    {TABLE_HEAD[0] === timeTableClassData.classDay ? (
-                      <div className="flex flex-col">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold"
-                        >
-                          {timeTableClassData?.classTime}
-                        </Typography>
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold opacity-70"
-                        >
-                          {timeTableClassData?.subjectName}
-                        </Typography>
-                      </div>
-                    ) : (
-                      <td className="bg-red-600 text-white">No Class</td>
-                    )}
-                  </td>
-                  <td className={classes}>
-                    {TABLE_HEAD[1] === timeTableClassData.classDay ? (
-                      <div className="flex flex-col">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold"
-                        >
-                          {timeTableClassData?.classTime}
-                        </Typography>
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold opacity-70"
-                        >
-                          {timeTableClassData?.subjectName}
-                        </Typography>
-                      </div>
-                    ) : (
-                      <td className="bg-red-600 text-white">No Class</td>
-                    )}
-                  </td>
-                  <td className={classes}>
-                    {TABLE_HEAD[2] === timeTableClassData.classDay ? (
-                      <div className="flex flex-col">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold"
-                        >
-                          {timeTableClassData?.classTime}
-                        </Typography>
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold opacity-70"
-                        >
-                          {timeTableClassData?.subjectName}
-                        </Typography>
-                      </div>
-                    ) : (
-                      <td className="bg-red-600 text-white">No Class</td>
-                    )}
-                  </td>
-                  <td className={classes}>
-                    {TABLE_HEAD[3] === timeTableClassData.classDay ? (
-                      <div className="flex flex-col">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold"
-                        >
-                          {timeTableClassData?.classTime}
-                        </Typography>
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold opacity-70"
-                        >
-                          {timeTableClassData?.subjectName}
-                        </Typography>
-                      </div>
-                    ) : (
-                      <td className="bg-red-600 text-white">No Class</td>
-                    )}
-                  </td>
-                  <td className={classes}>
-                    {TABLE_HEAD[4] === timeTableClassData.classDay ? (
-                      <div className="flex flex-col">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold"
-                        >
-                          {timeTableClassData?.classTime}
-                        </Typography>
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold opacity-70"
-                        >
-                          {timeTableClassData?.subjectName}
-                        </Typography>
-                      </div>
-                    ) : (
-                      <td className="bg-red-600 text-white">No Class</td>
-                    )}
-                  </td>
-                  <td className={classes}>
-                    {TABLE_HEAD[5] === timeTableClassData.classDay ? (
-                      <div className="flex flex-col">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold"
-                        >
-                          {timeTableClassData?.classTime}
-                        </Typography>
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold opacity-70"
-                        >
-                          {timeTableClassData?.subjectName}
-                        </Typography>
-                      </div>
-                    ) : (
-                      <td className="bg-red-600 text-white">No Class</td>
-                    )}
-                  </td>
-                  <td className={classes}>
-                    {TABLE_HEAD[6] === timeTableClassData.classDay ? (
-                      <div className="flex flex-col">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold"
-                        >
-                          {timeTableClassData?.classTime}
-                        </Typography>
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold opacity-70"
-                        >
-                          {timeTableClassData?.subjectName}
-                        </Typography>
-                      </div>
-                    ) : (
-                      <td className="bg-red-600 text-white">No Class</td>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
+            {getAllAddClassTimeTableData?.classSchedules?.map(
+              (schedule, index) =>
+                schedule.schedule?.map((item, innerIndex) => (
+                  <tr key={`${index}-${innerIndex}`}>
+                    <td>
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-bold"
+                      >
+                        {schedule?.classDay}
+                      </Typography>
+                    </td>
+                    <td>
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-bold"
+                      >
+                        {item?.classTime}
+                      </Typography>
+                    </td>
+                    <td>
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-bold"
+                      >
+                        {item?.subjectName}
+                      </Typography>
+                    </td>
+                    <td>
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-bold"
+                      >
+                        {item?.teacherName}
+                      </Typography>
+                    </td>
+                  </tr>
+                ))
+            )}
           </tbody>
         </table>
       </CardBody>

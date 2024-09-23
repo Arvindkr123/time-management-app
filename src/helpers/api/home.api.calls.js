@@ -30,7 +30,11 @@ export const addClassTimeTableDataApiCall = async (classTimeTableData) => {
   return res.data;
 };
 
-export const getAllAddClassTimeTableDataApiCall = async () => {
-  const res = await axios.get(`${BACKEND_BASE_URL}/api/addclassTimeTable/get`);
+export const getAllAddClassTimeTableDataApiCall = async (search = "") => {
+  const res = await axios.get(`${BACKEND_BASE_URL}/api/addclassTimeTable/get`, {
+    params: {
+      search,
+    },
+  });
   return res.data;
 };
