@@ -282,14 +282,19 @@ const Home = () => {
               }
               label="Select Teacher"
             >
-              {allTimeTableTeachersOfData?.map((singleTeacher) => (
-                <Option
-                  key={singleTeacher?._id}
-                  value={singleTeacher?.TeacherName}
-                >
-                  {singleTeacher?.TeacherName}
-                </Option>
-              ))}
+              {allTimeTableTeachersOfData &&
+              allTimeTableTeachersOfData.length > 0 ? (
+                allTimeTableTeachersOfData.map((singleTeacher) => (
+                  <Option
+                    key={singleTeacher?._id}
+                    value={singleTeacher?.TeacherName}
+                  >
+                    {singleTeacher?.TeacherName}
+                  </Option>
+                ))
+              ) : (
+                <Option disabled>No teachers available</Option>
+              )}
             </Select>
             <Select
               value={addClassTimeTableData?.ClassName}
@@ -301,11 +306,16 @@ const Home = () => {
               }
               label="Select Class"
             >
-              {allTimeTableClassesOfData?.map((singleClass) => (
-                <Option key={singleClass?._id} value={singleClass?.ClassName}>
-                  {singleClass?.ClassName}
-                </Option>
-              ))}
+              {allTimeTableClassesOfData &&
+              allTimeTableClassesOfData.length > 0 ? (
+                allTimeTableClassesOfData?.map((singleClass) => (
+                  <Option key={singleClass?._id} value={singleClass?.ClassName}>
+                    {singleClass?.ClassName}
+                  </Option>
+                ))
+              ) : (
+                <Option disabled>No classes available</Option>
+              )}
             </Select>
             <Select
               value={addClassTimeTableData?.subjectName}
@@ -317,14 +327,19 @@ const Home = () => {
               }
               label="Select Subject"
             >
-              {allTimeTableSubjectsOfData?.map((singleSubject) => (
-                <Option
-                  key={singleSubject?._id}
-                  value={singleSubject?.SubjectName}
-                >
-                  {singleSubject?.SubjectName}
-                </Option>
-              ))}
+              {allTimeTableSubjectsOfData &&
+              allTimeTableSubjectsOfData.length > 0 ? (
+                allTimeTableSubjectsOfData?.map((singleSubject) => (
+                  <Option
+                    key={singleSubject?._id}
+                    value={singleSubject?.SubjectName}
+                  >
+                    {singleSubject?.SubjectName}
+                  </Option>
+                ))
+              ) : (
+                <Option disabled>No Subjects available</Option>
+              )}
             </Select>
             <Select
               value={addClassTimeTableData?.classDay}

@@ -149,7 +149,7 @@ export function NavbarSimple() {
     <Navbar
       fullWidth={true}
       variant="filled"
-      onAnimationStart={true}
+      onAnimationStart={() => {}}
       className="sticky top-0 w-full px-6 py-3 bg-white z-50"
     >
       <div className="flex items-center justify-between text-blue-gray-900 w-full">
