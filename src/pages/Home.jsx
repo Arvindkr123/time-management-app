@@ -11,8 +11,6 @@ import {
   Typography,
   Button,
   CardBody,
-  Chip,
-  Avatar,
   Dialog,
   CardFooter,
   Select,
@@ -38,14 +36,14 @@ const TABLE_HEAD = ["Day", "Time", "Subject", "Teacher"];
 const Home = () => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen((cur) => !cur);
-  const [time, setTime] = useState("10:00 AM"); // Default time
+  const [time, setTime] = useState("10:00"); // Default time
   const [addClassTimeTableData, setAddClassTimeTableData] = useState({
     teacherName: "",
     sectionName: "",
     subjectName: "",
     ClassName: "",
     classDay: "",
-    classTime: "10:00 AM", // Default to 10:00 AM
+    classTime: "10:00", // Default to 10:00 AM
   });
   const [searchClassTimeSchedule, setSearchClassTimeSchedule] = useState({
     ClassName: "",
@@ -128,8 +126,6 @@ const Home = () => {
     }
   );
 
-  console.log("Fetched Class TimeTable Data:", getAllAddClassTimeTableData);
-
   // console.log(getAllAddClassTimeTableData);
   const onAddClassSubmitHandler = (e) => {
     e.preventDefault();
@@ -153,8 +149,30 @@ const Home = () => {
       subjectName: "",
       ClassName: "",
       classDay: "",
-      classTime: "10:00 AM",
+      classTime: "10:00",
     });
+  };
+
+  const convertTimeTo12Hour = (time) => {
+    if (!time) return ""; // Return empty if no time is provided
+
+    // Split the time into hours and minutes
+    let [hours, minutes] = time.split(":");
+
+    // Convert hours to a number
+    hours = parseInt(hours, 10);
+
+    // Determine AM or PM
+    const amOrPm = hours >= 12 ? "PM" : "AM";
+
+    // Convert hours to 12-hour format
+    hours = hours % 12 || 12; // If hours is 0 or 12, set it to 12
+
+    // Format the hours and minutes
+    const formattedHours = hours.toString().padStart(2, "0");
+    const formattedMinutes = minutes.padStart(2, "0");
+
+    return `${formattedHours}:${formattedMinutes} ${amOrPm}`;
   };
 
   return (
@@ -309,9 +327,8 @@ const Home = () => {
                 onChange={(e) => timeSelectHandler(e)}
                 value={time}
                 disableClock={true} // Hide the clock interface
-                format="h:mm a" // Format time to 12-hour with AM/PM
+                format="h:mm" // Format time to 12-hour with AM/PM
               />
-              <div>Selected Time: {time}</div>
             </div>
           </CardBody>
           <CardFooter className="pt-0 flex flex-col gap-2">
@@ -334,13 +351,21 @@ const Home = () => {
       <CardBody className="overflow-scroll px-0 p-5">
         <table className="mt-4 w-full min-w-max table-auto text-left">
           <caption>
-            <Typography variant="h4" color="blue-gray" className="font-bold">
+            <Typography
+              variant="paragraph"
+              color="blue-gray"
+              className="font-bold"
+            >
               Class Name :{" "}
               {searchClassTimeSchedule?.ClassName === ""
                 ? "Please Search Class Name to See Class Time Table"
                 : searchClassTimeSchedule?.ClassName}
             </Typography>
-            <Typography variant="h5" color="blue-gray" className="font-bold">
+            <Typography
+              variant="paragraph"
+              color="blue-gray"
+              className="font-bold"
+            >
               Section Name :{" "}
               {searchClassTimeSchedule?.sectionName === ""
                 ? "Please Search Section Name to See Class Time Table"
@@ -388,7 +413,7 @@ const Home = () => {
                         color="blue-gray"
                         className="font-bold"
                       >
-                        {item?.classTime}
+                        {convertTimeTo12Hour(item?.classTime)}
                       </Typography>
                     </td>
                     <td>

@@ -29,12 +29,8 @@ export const addClassTimeTableController = async (req, res) => {
 
     // Find the existing timetable for the teacher
     let classTimeTable = await ClassTimeTableModel.findOne({
-      ClassName: {
-        $or: {
-          ClassName,
-          sectionName,
-        },
-      },
+      ClassName,
+      sectionName,
     });
 
     if (!classTimeTable) {
