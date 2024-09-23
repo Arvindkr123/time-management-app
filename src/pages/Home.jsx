@@ -384,24 +384,16 @@ const Home = () => {
       </Dialog>
       {/* ------------------ Add Class Time table dialoag End here ----------------------- */}
 
-      <CardBody className="overflow-auto px-0 p-5">
+      <CardBody className="overflow-auto px-0 p-5 ">
         <table className="mt-4 w-full min-w-max table-auto text-left">
-          <caption>
-            <Typography
-              variant="paragraph"
-              color="blue-gray"
-              className="font-bold"
-            >
+          <caption className="py-5 border-b-2 border-orange-700 ">
+            <Typography variant="paragraph" color="blue-gray" className="">
               Class Name :{" "}
               {searchClassTimeSchedule?.ClassName === ""
                 ? "Please Search Class Name to See Class Time Table"
                 : searchClassTimeSchedule?.ClassName}
             </Typography>
-            <Typography
-              variant="paragraph"
-              color="blue-gray"
-              className="font-bold"
-            >
+            <Typography variant="paragraph" color="blue-gray" className="">
               Section Name :{" "}
               {searchClassTimeSchedule?.sectionName === ""
                 ? "Please Search Section Name to See Class Time Table"
