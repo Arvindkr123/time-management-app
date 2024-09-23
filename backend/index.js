@@ -21,6 +21,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/auth", userRoutes);
+// /api/addclassTimeTable
 app.use("/api/addclassTimeTable", classTimeTableRoutes);
 app.use("/api/timetable/class", classRoutes);
 app.use("/api/timetable/teacher", teacherRoutes);

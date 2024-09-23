@@ -45,3 +45,13 @@ export const addClassTimeTableController = async (req, res) => {
     });
   }
 };
+
+export const getAddClassTimeTableControllers = async (req, res) => {
+  try {
+    const classTimeTablesData = await ClassTimeTableModel.find();
+    console.log(classTimeTablesData);
+    res.status(200).json(classTimeTablesData);
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Something went wrong" });
+  }
+};

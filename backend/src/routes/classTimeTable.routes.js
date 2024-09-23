@@ -1,7 +1,11 @@
 import { Router } from "express";
-import { addClassTimeTableController } from "../controllers/class-time.table.controllers.js";
+import {
+  addClassTimeTableController,
+  getAddClassTimeTableControllers,
+} from "../controllers/class-time.table.controllers.js";
 const router = Router();
 
-router.route("/").post(addClassTimeTableController);
+router.get("/get", getAddClassTimeTableControllers);
+router.post("/", addClassTimeTableController);
 
 export default router;
