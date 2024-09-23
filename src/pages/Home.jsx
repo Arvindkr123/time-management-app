@@ -64,7 +64,7 @@ const Home = () => {
       if (data.success) {
         toast.success("Added Class TimeTable successfully!"); // Add toast on success
       }
-      queryClient.invalidateQueries(["getAllAddClassTimeTable", 1]);
+      queryClient.invalidateQueries(["getAllAddClassTimeTable"]);
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || "Error adding class"); // Add toast on error
@@ -106,14 +106,22 @@ const Home = () => {
     }
   );
 
-  const debounceSearch = useDebounce(
-    `${addClassTimeTableData?.ClassName}-${addClassTimeTableData?.sectionName}`,
-    1000
+  const debouncedClassName = useDebounce(
+    searchClassTimeSchedule.ClassName,
+    500
+  );
+  const debouncedSectionName = useDebounce(
+    searchClassTimeSchedule.sectionName,
+    500
   );
 
   const { data: getAllAddClassTimeTableData } = useQuery(
-    ["getAllAddClassTimeTable", debounceSearch],
-    () => getAllAddClassTimeTableDataApiCall(debounceSearch),
+    ["getAllAddClassTimeTable", debouncedClassName, debouncedSectionName],
+    () =>
+      getAllAddClassTimeTableDataApiCall({
+        ClassName: debouncedClassName,
+        sectionName: debouncedSectionName,
+      }),
     {
       keepPreviousData: true, // Keep previous data while fetching new data
       refetchOnWindowFocus: false,

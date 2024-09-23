@@ -85,16 +85,12 @@ export const addClassTimeTableController = async (req, res) => {
 
 export const getAddClassTimeTableControllers = async (req, res) => {
   try {
-    const { search = "" } = req.query;
-    // console.log(search);
-    const searchFilter = search
-      ? {
-          ClassName: { $regex: search.split("-")[0], $options: "i" },
-          sectionName: { $regex: search.split("-")[1], $options: "i" },
-        } // Case-insensitive search
-      : {};
-    const classTimeTablesData = await ClassTimeTableModel.findOne(searchFilter);
-    // console.log(classTimeTablesData);
+    const { ClassName, sectionName } = req.query;
+    const classTimeTablesData = await ClassTimeTableModel.findOne({
+      ClassName: { $regex: ClassName, $options: "i" },
+      sectionName: { $regex: sectionName, $options: "i" },
+    });
+    console.log(classTimeTablesData);
     // console.log(classTimeTablesData);
     res.status(200).json(classTimeTablesData);
   } catch (error) {
