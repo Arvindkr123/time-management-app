@@ -93,3 +93,32 @@ export const getAddClassTimeTableControllers = async (req, res) => {
     res.status(500).json({ success: false, error: "Something went wrong" });
   }
 };
+
+export const deleteSingleClassTimeTableController = async (req, res) => {
+  try {
+    const { p1, ch1 } = req.params;
+    console.log(req.params);
+
+    //Assuming ClassTimeTableModel is your Mongoose model
+    const result = await ClassTimeTableModel.updateOne(
+      {
+        _id: p1, // Mongoose will cast this string to ObjectId automatically
+        "classSchedules.schedule._id": ch1,
+      },
+      {
+        $pull: {
+          "classSchedules.$.schedule": { _id: ch1 },
+        },
+      }
+    );
+
+    console.log(result);
+
+    res.status(200).json({
+      success: true,
+      messgae: "deleted single class time table successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Something went wrong" });
+  }
+};

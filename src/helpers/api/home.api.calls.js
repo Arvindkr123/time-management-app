@@ -42,3 +42,14 @@ export const getAllAddClassTimeTableDataApiCall = async ({
   });
   return res.data;
 };
+
+export const deleteClassTimeTableDataApiCall = async ({
+  parentId,
+  childId,
+}) => {
+  console.log(parentId, childId);
+  const res = await axios.delete(
+    `${BACKEND_BASE_URL}/api/addclassTimeTable/delete/${parentId}/${childId}`
+  );
+  return res.data;
+};

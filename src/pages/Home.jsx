@@ -2,6 +2,7 @@
 import {
   MagnifyingGlassIcon,
   ChevronUpDownIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 import { UserPlusIcon } from "@heroicons/react/24/solid";
 import {
@@ -15,6 +16,7 @@ import {
   CardFooter,
   Select,
   Option,
+  IconButton,
 } from "@material-tailwind/react";
 import { useState } from "react";
 import TimePicker from "react-time-picker";
@@ -27,11 +29,12 @@ import {
   getAllClassesOfTimeTable,
   getAllSubjectsOfTimeTableApiCall,
   getAllTeachersOfTimeTableApiCall,
+  deleteClassTimeTableDataApiCall,
 } from "../helpers/api/home.api.calls";
 import { toast } from "react-toastify";
 import { useDebounce } from "../hooks/useDebounce";
 
-const TABLE_HEAD = ["Day", "Time", "Subject", "Teacher"];
+const TABLE_HEAD = ["Day", "Time", "Subject", "Teacher", ""];
 
 const Home = () => {
   const [open, setOpen] = useState(false);
@@ -68,6 +71,20 @@ const Home = () => {
       toast.error(error.response?.data?.message || "Error adding class"); // Add toast on error
     },
   });
+  const deleteSingleClassTimeTableMutation = useMutation(
+    deleteClassTimeTableDataApiCall,
+    {
+      onSuccess: (data) => {
+        if (data.success) {
+          toast.success("deleted single class time table successfully!"); // Add toast on success
+        }
+        queryClient.invalidateQueries(["getAllAddClassTimeTable"]);
+      },
+      onError: (error) => {
+        toast.error(error.response?.data?.message || "Error adding class"); // Add toast on error
+      },
+    }
+  );
 
   const days = [
     "Monday",
@@ -126,7 +143,7 @@ const Home = () => {
     }
   );
 
-  // console.log(getAllAddClassTimeTableData);
+  //console.log(getAllAddClassTimeTableData);
   const onAddClassSubmitHandler = (e) => {
     e.preventDefault();
     //console.log(addClassTimeTableData);
@@ -173,6 +190,10 @@ const Home = () => {
     const formattedMinutes = minutes.padStart(2, "0");
 
     return `${formattedHours}:${formattedMinutes} ${amOrPm}`;
+  };
+
+  const deleteSingleClassTimeTableHandler = (parentId, childId) => {
+    deleteSingleClassTimeTableMutation.mutate({ parentId, childId });
   };
 
   return (
@@ -327,7 +348,7 @@ const Home = () => {
                 onChange={(e) => timeSelectHandler(e)}
                 value={time}
                 disableClock={true} // Hide the clock interface
-                format="h:mm" // Format time to 12-hour with AM/PM
+                format="h:mm a" // Format time to 12-hour with AM/PM
               />
             </div>
           </CardBody>
@@ -433,6 +454,18 @@ const Home = () => {
                       >
                         {item?.teacherName}
                       </Typography>
+                    </td>
+                    <td
+                      onClick={() =>
+                        deleteSingleClassTimeTableHandler(
+                          getAllAddClassTimeTableData?._id,
+                          item?._id
+                        )
+                      }
+                    >
+                      <IconButton variant="text">
+                        <TrashIcon className="h-4 w-4" />
+                      </IconButton>
                     </td>
                   </tr>
                 ))
