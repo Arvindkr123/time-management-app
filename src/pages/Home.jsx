@@ -197,7 +197,7 @@ const Home = () => {
   };
 
   return (
-    <Card className="h-full w-full p-5">
+    <Card className="h-screen w-full p-5">
       <CardHeader floated={false} shadow={false} className="rounded-none">
         <div className="mb-8 flex items-center justify-between gap-8">
           <div>
@@ -384,7 +384,7 @@ const Home = () => {
       </Dialog>
       {/* ------------------ Add Class Time table dialoag End here ----------------------- */}
 
-      <CardBody className="overflow-scroll px-0 p-5">
+      <CardBody className="overflow-auto px-0 p-5">
         <table className="mt-4 w-full min-w-max table-auto text-left">
           <caption>
             <Typography
