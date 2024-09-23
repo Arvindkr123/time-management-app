@@ -112,7 +112,7 @@ export const deleteSingleClassTimeTableController = async (req, res) => {
       }
     );
 
-    console.log(result);
+    //console.log(result);
 
     res.status(200).json({
       success: true,

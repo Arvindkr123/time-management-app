@@ -22,7 +22,7 @@ function NavList() {
 
   const navigate = useNavigate();
 
-  console.log(location.pathname);
+  //console.log(location.pathname);
 
   const userLogoutMutation = useMutation(logoutUserApiCall, {
     onSuccess: (data) => {
