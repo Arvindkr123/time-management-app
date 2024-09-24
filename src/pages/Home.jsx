@@ -3,6 +3,7 @@ import {
   MagnifyingGlassIcon,
   ChevronUpDownIcon,
   TrashIcon,
+  PencilIcon,
 } from "@heroicons/react/24/outline";
 import { UserPlusIcon } from "@heroicons/react/24/solid";
 import {
@@ -33,8 +34,9 @@ import {
 } from "../helpers/api/home.api.calls";
 import { toast } from "react-toastify";
 import { useDebounce } from "../hooks/useDebounce";
+import TimePickerCustom from "../components/TimePickerCustom";
 
-const TABLE_HEAD = ["Day", "Time", "Subject", "Teacher", ""];
+const TABLE_HEAD = ["Day", "Date", "Time", "Subject", "Teacher", "", ""];
 
 const Home = () => {
   const [open, setOpen] = useState(false);
@@ -53,11 +55,11 @@ const Home = () => {
     sectionName: "",
   });
 
-  const timeSelectHandler = (timeData) => {
-    // This will give time in AM/PM format
-    setTime(timeData);
-    setAddClassTimeTableData((prev) => ({ ...prev, classTime: timeData }));
-  };
+  // const timeSelectHandler = (timeData) => {
+  //   // This will give time in AM/PM format
+  //   setTime(timeData);
+  //   setAddClassTimeTableData((prev) => ({ ...prev, classTime: timeData }));
+  // };
   const queryClient = useQueryClient();
 
   const addClassTimeTableMutation = useMutation(addClassTimeTableDataApiCall, {
@@ -201,6 +203,15 @@ const Home = () => {
       return; // Exit if user doesn't confirm the deletion
     }
     deleteSingleClassTimeTableMutation.mutate({ parentId, childId });
+  };
+  const editSingleClassTimeTableHandler = (parentId, childId, data) => {
+    console.log(data);
+    // deleteSingleClassTimeTableMutation.mutate({ parentId, childId });
+  };
+
+  const timeSelectHandler = (selectedTime) => {
+    console.log("Selected Time:", selectedTime);
+    setAddClassTimeTableData((prev) => ({ ...prev, classTime: selectedTime }));
   };
 
   return (
@@ -431,13 +442,7 @@ const Home = () => {
               ))}
             </Select>
             <div className="flex flex-col gap-2 w-full max-w-sm min-w-[200px]">
-              <label>Time:hour</label>
-              <TimePicker
-                onChange={(e) => timeSelectHandler(e)}
-                value={time}
-                disableClock={true} // Hide the clock interface
-                format="h:mm a" // Format time to 12-hour with AM/PM
-              />
+              <TimePickerCustom onChange={timeSelectHandler} />
             </div>
           </CardBody>
           <CardFooter className="pt-0 flex flex-col gap-2">
@@ -522,7 +527,16 @@ const Home = () => {
                         color="blue-gray"
                         className="font-bold"
                       >
-                        {convertTimeTo12Hour(item?.classTime)}
+                        {getAllAddClassTimeTableData?.updatedAt?.split("T")[0]}
+                      </Typography>
+                    </td>
+                    <td>
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-bold"
+                      >
+                        {item?.classTime}
                       </Typography>
                     </td>
                     <td>
@@ -553,6 +567,19 @@ const Home = () => {
                     >
                       <IconButton variant="text">
                         <TrashIcon className="h-4 w-4" />
+                      </IconButton>
+                    </td>
+                    <td
+                      onClick={() =>
+                        editSingleClassTimeTableHandler(
+                          getAllAddClassTimeTableData?._id,
+                          item?._id,
+                          { ...item, classDay: schedule?.classDay }
+                        )
+                      }
+                    >
+                      <IconButton variant="text">
+                        <PencilIcon className="h-4 w-4" />
                       </IconButton>
                     </td>
                   </tr>
