@@ -193,6 +193,13 @@ const Home = () => {
   };
 
   const deleteSingleClassTimeTableHandler = (parentId, childId) => {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this class time schedule ?"
+      )
+    ) {
+      return; // Exit if user doesn't confirm the deletion
+    }
     deleteSingleClassTimeTableMutation.mutate({ parentId, childId });
   };
 

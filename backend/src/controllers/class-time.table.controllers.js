@@ -86,7 +86,7 @@ export const getAddClassTimeTableControllers = async (req, res) => {
       ClassName: { $regex: ClassName, $options: "i" },
       sectionName: { $regex: sectionName, $options: "i" },
     });
-    console.log(classTimeTablesData);
+    //console.log(classTimeTablesData);
     // console.log(classTimeTablesData);
     res.status(200).json(classTimeTablesData);
   } catch (error) {
@@ -97,7 +97,7 @@ export const getAddClassTimeTableControllers = async (req, res) => {
 export const deleteSingleClassTimeTableController = async (req, res) => {
   try {
     const { p1, ch1 } = req.params;
-    console.log(req.params);
+    //console.log(req.params);
 
     //Assuming ClassTimeTableModel is your Mongoose model
     const result = await ClassTimeTableModel.updateOne(
