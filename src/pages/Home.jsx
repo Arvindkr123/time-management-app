@@ -203,8 +203,6 @@ const Home = () => {
     deleteSingleClassTimeTableMutation.mutate({ parentId, childId });
   };
 
-  console.log("classes fetched ", allTimeTableClassesOfData);
-
   return (
     <Card className="h-screen w-full p-5">
       <CardHeader floated={false} shadow={false} className="rounded-none">
@@ -229,37 +227,6 @@ const Home = () => {
           </div>
         </div>
         <div className="flex flex-col items-center gap-4 md:flex-row">
-          {/* <div className="w-full max-w-sm min-w-[200px] ">
-            <div className="relative">
-              <Select
-                className="w-full bg-transparent placeholder:text-green-400 text-green-700 text-sm border border-green-200 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-green-500 hover:border-green-300 shadow-sm focus:shadow appearance-none cursor-pointer"
-                value={searchClassTimeSchedule?.ClassName}
-                onChange={(e) =>
-                  setSearchClassTimeSchedule((prev) => ({
-                    ...prev,
-                    ClassName: e,
-                  }))
-                }
-                label="Select Class"
-                style={{ maxHeight: "200px", overflowY: "auto" }} // Added styles here
-              >
-                {allTimeTableClassesOfData &&
-                allTimeTableClassesOfData.length > 0 ? (
-                  allTimeTableClassesOfData.map((singleClass) => (
-                    <Option
-                      key={singleClass?._id}
-                      value={singleClass?.ClassName}
-                    >
-                      {singleClass?.ClassName}
-                    </Option>
-                  ))
-                ) : (
-                  <Option disabled>No classes available</Option>
-                )}
-              </Select>
-            </div>
-          </div> */}
-
           <div className="w-full max-w-sm min-w-[200px]">
             <div className="relative">
               <select
@@ -303,8 +270,43 @@ const Home = () => {
               </svg>
             </div>
           </div>
+          <div className="w-full max-w-sm min-w-[200px]">
+            <div className="relative">
+              <select
+                value={searchClassTimeSchedule?.sectionName}
+                onChange={(e) =>
+                  setSearchClassTimeSchedule((prev) => ({
+                    ...prev,
+                    sectionName: e.target.value,
+                  }))
+                }
+                className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-400 shadow-sm focus:shadow-md appearance-none cursor-pointer"
+              >
+                <option value="">Select Class Section Name</option>
+                {["A", "B", "C", "D", "E"].map((section) => (
+                  <option key={section} value={section}>
+                    {section}
+                  </option>
+                ))}
+              </select>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.2"
+                stroke="currentColor"
+                className="h-5 w-5 ml-1 absolute top-2.5 right-2.5 text-slate-700"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"
+                />
+              </svg>
+            </div>
+          </div>
 
-          <div className="w-full md:w-72">
+          {/* <div className="w-full md:w-72">
             <Input
               label="Search By Section Name"
               icon={<MagnifyingGlassIcon className="h-5 w-5" />}
@@ -316,7 +318,7 @@ const Home = () => {
                 }))
               }
             />
-          </div>
+          </div> */}
         </div>
       </CardHeader>
 
@@ -460,15 +462,23 @@ const Home = () => {
           <caption className="py-5 border-b-2 border-orange-700 ">
             <Typography variant="paragraph" color="blue-gray" className="">
               Class Name :{" "}
-              {searchClassTimeSchedule?.ClassName === ""
-                ? "Please Search Class Name to See Class Time Table"
-                : searchClassTimeSchedule?.ClassName}
+              {searchClassTimeSchedule?.ClassName === "" ? (
+                <Typography variant="paragraph" color="blue-gray" className="">
+                  Please Search Class Name to See Class Time Table
+                </Typography>
+              ) : (
+                searchClassTimeSchedule?.ClassName
+              )}
             </Typography>
             <Typography variant="paragraph" color="blue-gray" className="">
               Section Name :{" "}
-              {searchClassTimeSchedule?.sectionName === ""
-                ? "Please Search Section Name to See Class Time Table"
-                : searchClassTimeSchedule?.sectionName}
+              {searchClassTimeSchedule?.sectionName === "" ? (
+                <Typography variant="paragraph" color="blue-gray" className="">
+                  Please Search Section Name to See Class Time Table
+                </Typography>
+              ) : (
+                searchClassTimeSchedule?.sectionName
+              )}
             </Typography>
           </caption>
           <thead>
