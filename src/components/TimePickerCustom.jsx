@@ -19,6 +19,7 @@ const TimePickerCustom = ({ setAddClassTimeTableData }) => {
         value={hour}
         onChange={(e) => setHour(e.target.value)}
       >
+        <option>select hour</option>
         {Array.from({ length: 12 }, (_, i) => (
           <option key={i} value={i + 1}>
             {i + 1}
@@ -31,6 +32,7 @@ const TimePickerCustom = ({ setAddClassTimeTableData }) => {
         value={minute}
         onChange={(e) => setMinute(e.target.value)}
       >
+        <option value="">select minute</option>
         {Array.from({ length: 60 }, (_, i) => (
           <option key={i} value={i < 10 ? `0${i}` : i}>
             {i < 10 ? `0${i}` : i}
@@ -43,6 +45,7 @@ const TimePickerCustom = ({ setAddClassTimeTableData }) => {
         value={period}
         onChange={(e) => setPeriod(e.target.value)}
       >
+        <option value="">select period</option>
         <option value="AM">AM</option>
         <option value="PM">PM</option>
       </select>
