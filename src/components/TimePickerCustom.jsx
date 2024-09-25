@@ -1,15 +1,15 @@
 /* eslint-disable react/prop-types */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const TimePickerCustom = ({ onChange }) => {
-  const [hour, setHour] = useState("12");
-  const [minute, setMinute] = useState("00");
-  const [period, setPeriod] = useState("AM");
+const TimePickerCustom = ({ setAddClassTimeTableData }) => {
+  const [hour, setHour] = useState("");
+  const [minute, setMinute] = useState("");
+  const [period, setPeriod] = useState("");
 
-  const handleTimeChange = () => {
+  useEffect(() => {
     const selectedTime = `${hour}:${minute} ${period}`;
-    onChange(selectedTime);
-  };
+    setAddClassTimeTableData((prev) => ({ ...prev, classTime: selectedTime }));
+  }, [hour, minute, period, setAddClassTimeTableData]);
 
   return (
     <div>
@@ -17,10 +17,7 @@ const TimePickerCustom = ({ onChange }) => {
       <select
         className="h-8 p-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring focus:ring-blue-500"
         value={hour}
-        onChange={(e) => {
-          setHour(e.target.value);
-          handleTimeChange();
-        }}
+        onChange={(e) => setHour(e.target.value)}
       >
         {Array.from({ length: 12 }, (_, i) => (
           <option key={i} value={i + 1}>
@@ -28,15 +25,13 @@ const TimePickerCustom = ({ onChange }) => {
           </option>
         ))}
       </select>
+
       <select
         className="h-8 p-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring focus:ring-blue-500"
         value={minute}
-        onChange={(e) => {
-          setMinute(e.target.value);
-          handleTimeChange();
-        }}
+        onChange={(e) => setMinute(e.target.value)}
       >
-        {Array.from({ length: 61 }, (_, i) => (
+        {Array.from({ length: 60 }, (_, i) => (
           <option key={i} value={i < 10 ? `0${i}` : i}>
             {i < 10 ? `0${i}` : i}
           </option>
@@ -46,10 +41,7 @@ const TimePickerCustom = ({ onChange }) => {
       <select
         className="h-8 p-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring focus:ring-blue-500"
         value={period}
-        onChange={(e) => {
-          setPeriod(e.target.value);
-          handleTimeChange();
-        }}
+        onChange={(e) => setPeriod(e.target.value)}
       >
         <option value="AM">AM</option>
         <option value="PM">PM</option>
@@ -57,17 +49,5 @@ const TimePickerCustom = ({ onChange }) => {
     </div>
   );
 };
-
-// const App = () => {
-//   const timeSelectHandler = (selectedTime) => {
-//     console.log("Selected Time:", selectedTime);
-//   };
-
-//   return (
-//     <div>
-//       <TimePicker onChange={timeSelectHandler} />
-//     </div>
-//   );
-// };
 
 export default TimePickerCustom;

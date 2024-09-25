@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import {
-  MagnifyingGlassIcon,
   ChevronUpDownIcon,
   TrashIcon,
   PencilIcon,
@@ -20,9 +19,6 @@ import {
   IconButton,
 } from "@material-tailwind/react";
 import { useState } from "react";
-import TimePicker from "react-time-picker";
-import "react-time-picker/dist/TimePicker.css";
-import "react-clock/dist/Clock.css"; // For proper clock UI if you want to enable the clock
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import {
   addClassTimeTableDataApiCall,
@@ -31,6 +27,7 @@ import {
   getAllSubjectsOfTimeTableApiCall,
   getAllTeachersOfTimeTableApiCall,
   deleteClassTimeTableDataApiCall,
+  updateClassTimeTableDataApiCall,
 } from "../helpers/api/home.api.calls";
 import { toast } from "react-toastify";
 import { useDebounce } from "../hooks/useDebounce";
@@ -39,6 +36,8 @@ import TimePickerCustom from "../components/TimePickerCustom";
 const TABLE_HEAD = ["Day", "Date", "Time", "Subject", "Teacher", "", ""];
 
 const Home = () => {
+  const [editSingleClassTimeTableId, setEditSingleClassTimeTableId] =
+    useState(null);
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen((cur) => !cur);
   const [time, setTime] = useState("10:00"); // Default time
@@ -48,18 +47,13 @@ const Home = () => {
     subjectName: "",
     ClassName: "",
     classDay: "",
-    classTime: "10:00", // Default to 10:00 AM
+    classTime: "", // Default to 10:00 AM
   });
   const [searchClassTimeSchedule, setSearchClassTimeSchedule] = useState({
     ClassName: "",
     sectionName: "",
   });
 
-  // const timeSelectHandler = (timeData) => {
-  //   // This will give time in AM/PM format
-  //   setTime(timeData);
-  //   setAddClassTimeTableData((prev) => ({ ...prev, classTime: timeData }));
-  // };
   const queryClient = useQueryClient();
 
   const addClassTimeTableMutation = useMutation(addClassTimeTableDataApiCall, {
@@ -73,6 +67,24 @@ const Home = () => {
       toast.error(error.response?.data?.message || "Error adding class"); // Add toast on error
     },
   });
+  const updateClassTimeTableMutation = useMutation(
+    updateClassTimeTableDataApiCall,
+    {
+      onSuccess: (data) => {
+        if (data.success) {
+          toast.success("updated Class TimeTable successfully!"); // Add toast on success
+        }
+        queryClient.invalidateQueries([
+          "getAllAddClassTimeTable",
+          debouncedClassName,
+          debouncedSectionName,
+        ]);
+      },
+      onError: (error) => {
+        toast.error(error.response?.data?.message || "Error adding class"); // Add toast on error
+      },
+    }
+  );
   const deleteSingleClassTimeTableMutation = useMutation(
     deleteClassTimeTableDataApiCall,
     {
@@ -159,39 +171,26 @@ const Home = () => {
       return;
     }
 
-    addClassTimeTableMutation.mutate(addClassTimeTableData);
+    if (editSingleClassTimeTableId === null) {
+      addClassTimeTableMutation.mutate(addClassTimeTableData);
+    } else {
+      updateClassTimeTableMutation.mutate({
+        parentId: editSingleClassTimeTableId.parentId,
+        childId: editSingleClassTimeTableId.childId,
+        data: addClassTimeTableData,
+      });
+
+      setEditSingleClassTimeTableId(null);
+    }
     setOpen(false);
-    setTime("10:00 AM");
     setAddClassTimeTableData({
       sectionName: "",
       teacherName: "",
       subjectName: "",
       ClassName: "",
       classDay: "",
-      classTime: "10:00",
+      classTime: "",
     });
-  };
-
-  const convertTimeTo12Hour = (time) => {
-    if (!time) return ""; // Return empty if no time is provided
-
-    // Split the time into hours and minutes
-    let [hours, minutes] = time.split(":");
-
-    // Convert hours to a number
-    hours = parseInt(hours, 10);
-
-    // Determine AM or PM
-    const amOrPm = hours >= 12 ? "PM" : "AM";
-
-    // Convert hours to 12-hour format
-    hours = hours % 12 || 12; // If hours is 0 or 12, set it to 12
-
-    // Format the hours and minutes
-    const formattedHours = hours.toString().padStart(2, "0");
-    const formattedMinutes = minutes.padStart(2, "0");
-
-    return `${formattedHours}:${formattedMinutes} ${amOrPm}`;
   };
 
   const deleteSingleClassTimeTableHandler = (parentId, childId) => {
@@ -205,13 +204,16 @@ const Home = () => {
     deleteSingleClassTimeTableMutation.mutate({ parentId, childId });
   };
   const editSingleClassTimeTableHandler = (parentId, childId, data) => {
-    console.log(data);
-    // deleteSingleClassTimeTableMutation.mutate({ parentId, childId });
-  };
-
-  const timeSelectHandler = (selectedTime) => {
-    console.log("Selected Time:", selectedTime);
-    setAddClassTimeTableData((prev) => ({ ...prev, classTime: selectedTime }));
+    setOpen(true);
+    setAddClassTimeTableData({
+      teacherName: data.teacherName,
+      sectionName: data.sectionName,
+      subjectName: data.subjectName,
+      ClassName: data.ClassName,
+      classDay: data.classDay,
+      classTime: data.classTime,
+    });
+    setEditSingleClassTimeTableId({ parentId, childId });
   };
 
   return (
@@ -228,7 +230,18 @@ const Home = () => {
           </div>
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
             <Button
-              onClick={handleOpen}
+              onClick={() => {
+                setAddClassTimeTableData({
+                  sectionName: "",
+                  teacherName: "",
+                  subjectName: "",
+                  ClassName: "",
+                  classDay: "",
+                  classTime: "",
+                });
+                handleOpen();
+                setEditSingleClassTimeTableId(null);
+              }}
               className="flex items-center gap-3"
               size="sm"
             >
@@ -316,20 +329,6 @@ const Home = () => {
               </svg>
             </div>
           </div>
-
-          {/* <div className="w-full md:w-72">
-            <Input
-              label="Search By Section Name"
-              icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-              value={searchClassTimeSchedule?.sectionName}
-              onChange={(e) =>
-                setSearchClassTimeSchedule((prev) => ({
-                  ...prev,
-                  sectionName: e.target.value,
-                }))
-              }
-            />
-          </div> */}
         </div>
       </CardHeader>
 
@@ -343,7 +342,9 @@ const Home = () => {
         <Card className="mx-auto w-full max-w-[24rem]">
           <CardBody className="flex flex-col gap-4">
             <Typography variant="h4" color="blue-gray">
-              Add Class Time Table
+              {editSingleClassTimeTableId === null
+                ? "Add Class Time Table"
+                : "Edit Class Time Table"}
             </Typography>
             <Input
               label="Section Name"
@@ -355,6 +356,7 @@ const Home = () => {
                   sectionName: e.target.value,
                 }))
               }
+              disabled={editSingleClassTimeTableId === null ? false : true}
             />
             <Select
               value={addClassTimeTableData?.teacherName}
@@ -389,6 +391,7 @@ const Home = () => {
                 }))
               }
               label="Select Class"
+              disabled={editSingleClassTimeTableId === null ? false : true}
             >
               {allTimeTableClassesOfData &&
               allTimeTableClassesOfData.length > 0 ? (
@@ -426,6 +429,7 @@ const Home = () => {
               )}
             </Select>
             <Select
+              disabled={editSingleClassTimeTableId !== null}
               value={addClassTimeTableData?.classDay}
               onChange={(e) =>
                 setAddClassTimeTableData((prev) => ({
@@ -442,7 +446,10 @@ const Home = () => {
               ))}
             </Select>
             <div className="flex flex-col gap-2 w-full max-w-sm min-w-[200px]">
-              <TimePickerCustom onChange={timeSelectHandler} />
+              <TimePickerCustom
+                setAddClassTimeTableData={setAddClassTimeTableData}
+                addClassTimeTableData={addClassTimeTableData}
+              />
             </div>
           </CardBody>
           <CardFooter className="pt-0 flex flex-col gap-2">
@@ -452,7 +459,7 @@ const Home = () => {
               variant="gradient"
               fullWidth
             >
-              Add
+              {editSingleClassTimeTableId === null ? "Add" : "Update"}
             </Button>
             <Button variant="filled" onClick={handleOpen} fullWidth>
               Cancel
@@ -574,7 +581,13 @@ const Home = () => {
                         editSingleClassTimeTableHandler(
                           getAllAddClassTimeTableData?._id,
                           item?._id,
-                          { ...item, classDay: schedule?.classDay }
+                          {
+                            ...item,
+                            classDay: schedule?.classDay,
+                            ClassName: getAllAddClassTimeTableData?.ClassName,
+                            sectionName:
+                              getAllAddClassTimeTableData?.sectionName,
+                          }
                         )
                       }
                     >

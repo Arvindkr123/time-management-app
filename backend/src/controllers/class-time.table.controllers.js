@@ -122,3 +122,44 @@ export const deleteSingleClassTimeTableController = async (req, res) => {
     res.status(500).json({ success: false, error: "Something went wrong" });
   }
 };
+
+export const updateSingleClassTimeTableController = async (req, res) => {
+  try {
+    const { p1, ch1 } = req.params; // p1 is the class ID, ch1 is the schedule ID
+    const { classTime, subjectName, teacherName } = req.body; // Get new values from request body
+    console.log(req.body);
+
+    // Find the document and update the specific schedule entry
+    const result = await ClassTimeTableModel.updateOne(
+      {
+        _id: p1, // Mongoose will cast this string to ObjectId automatically
+        "classSchedules.schedule._id": ch1,
+      },
+      {
+        $set: {
+          "classSchedules.$.schedule.$[elem].classTime": classTime,
+          "classSchedules.$.schedule.$[elem].subjectName": subjectName,
+          "classSchedules.$.schedule.$[elem].teacherName": teacherName,
+        },
+      },
+      {
+        arrayFilters: [{ "elem._id": ch1 }], // Use arrayFilters to specify which item to update
+      }
+    );
+
+    if (result.nModified === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No schedule found to update",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Updated class time table successfully",
+    });
+  } catch (error) {
+    console.error(error); // Log the error for debugging
+    res.status(500).json({ success: false, error: "Something went wrong" });
+  }
+};
