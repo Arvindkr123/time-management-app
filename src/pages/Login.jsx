@@ -31,7 +31,7 @@ const Login = () => {
     userLoginMutation.mutate(user);
   };
   return (
-    <div className="flex container">
+    <div className="flex flex-row justify-center items-center h-screen container">
       {/* Left Section - Image */}
       <div className="hidden md:flex w-1/2 bg-blue-500 items-center justify-center">
         <img
@@ -69,6 +69,7 @@ const Login = () => {
                 onChange={(e) =>
                   setUser((prev) => ({ ...prev, email: e.target.value }))
                 }
+                autoComplete="email"
               />
               <Typography variant="h6" color="blue-gray" className="-mb-3">
                 Password
@@ -85,6 +86,7 @@ const Login = () => {
                 onChange={(e) =>
                   setUser((prev) => ({ ...prev, password: e.target.value }))
                 }
+                autoComplete="current-password"
               />
             </div>
             <Button className="mt-6" fullWidth type="submit">

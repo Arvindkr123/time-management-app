@@ -40,7 +40,7 @@ const Register = () => {
     //console.log(user);
   };
   return (
-    <div className="flex container">
+    <div className="flex flex-row justify-center items-center h-screen container">
       {/* Left Section - Image */}
       <div className="hidden md:flex w-1/2 bg-blue-500 items-center justify-center">
         <img

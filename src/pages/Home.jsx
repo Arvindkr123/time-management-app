@@ -287,6 +287,7 @@ const Home = () => {
                 className="h-5 w-5 ml-1 absolute top-2.5 right-2.5 text-slate-700"
               >
                 <path
+                  clipRule="evenodd"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"
@@ -322,6 +323,7 @@ const Home = () => {
                 className="h-5 w-5 ml-1 absolute top-2.5 right-2.5 text-slate-700"
               >
                 <path
+                  clipRule="evenodd"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"
