@@ -50,7 +50,7 @@ export const loginUserApiCall = async (userData) => {
 
 export const logoutUserApiCall = async () => {
   try {
-    const res = await axios.post(`${BACKEND_BASE_URL}/api/auth/logout`, {
+    const res = await axios.post(`${BACKEND_BASE_URL}/api/auth/logout`, null, {
       withCredentials: true, // Send credentials (cookies)
     });
     return res.data; // Success response data

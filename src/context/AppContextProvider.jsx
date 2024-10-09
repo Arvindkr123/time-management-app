@@ -17,7 +17,6 @@ const BACKEND_BASE_URL = import.meta.env.VITE_APP_BACKEND_BASE_URL;
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null); // Store user details
   const [accessToken, setAccessToken] = useState(null); // Store access token in memory
-  // console.log(accessToken);
   const navigate = useNavigate();
 
   // Function to fetch new access token using refresh token
@@ -26,7 +25,6 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.get(`${BACKEND_BASE_URL}/api/auth/refresh`, {
         withCredentials: true,
       });
-      // console.log(response);
       setAccessToken(response.data.accessToken); // Store new access token in memory
       return response.data.accessToken;
     } catch (error) {
@@ -46,6 +44,7 @@ export const AuthProvider = ({ children }) => {
           },
         });
         setUser(response.data.user); // Set user details after successful validation
+        navigate("/");
       } else {
         setUser(null);
         navigate("/login"); // Redirect to login if refresh fails
@@ -60,7 +59,7 @@ export const AuthProvider = ({ children }) => {
   // useLayoutEffect to validate user session on first load
   useLayoutEffect(() => {
     validateUserSession();
-  }, []);
+  }, [accessToken]);
 
   // Axios interceptor to handle token expiration and retry requests
   useEffect(() => {
@@ -78,20 +77,31 @@ export const AuthProvider = ({ children }) => {
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
+
+        // If the error is 401 (Unauthorized), try to refresh the token
         if (error.response.status === 401 && !originalRequest._retry) {
-          originalRequest._retry = true;
-          const newAccessToken = await refreshAccessToken(); // Get a new access token
+          originalRequest._retry = true; // Prevent endless loops of retries
+
+          // Refresh the access token
+          const newAccessToken = await refreshAccessToken();
+
           if (newAccessToken) {
-            axios.defaults.headers.common[
+            // Retry the original request with the new access token
+            originalRequest.headers[
               "Authorization"
             ] = `Bearer ${newAccessToken}`;
             return axios(originalRequest); // Retry the failed request
+          } else {
+            // If token refresh fails, call validateUserSession to check the user's session
+            await validateUserSession();
           }
         }
+
         return Promise.reject(error);
       }
     );
 
+    // Cleanup function to remove the interceptors when the component unmounts
     return () => {
       axios.interceptors.request.eject(requestInterceptor);
       axios.interceptors.response.eject(responseInterceptor);
